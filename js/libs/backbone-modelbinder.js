@@ -1,0 +1,1 @@
+backbone-modelbinder-0.1.6.custom.amd.js

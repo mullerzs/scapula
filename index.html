@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <link rel="stylesheet" type="text/css" href="css/font-awesome.css" />
+  <link rel="stylesheet" type="text/css" href="css/fullcalendar.css" />
+  <link rel="stylesheet" type="text/css" href="css/kalendae.css" />
+  <script>
+    var ntConfig = {
+      // TODO: config variables should be provided by the server
+      route  : 'login',
+      locale : 'en',
+      base   : '/'
+    };
+  </script>
+  <script data-main="js/main" src="js/libs/require.js"></script>
+</head>
+
+<body>
+  <div id="alert" class="alert" style="display: none">
+    <a class="close" href="#">&times;</a>
+    <h4 class="alert-heading"></h4>
+    <div></div>
+  </div>
+
+  <div id="container" class="container"></div>
+</body>
+
+</html>

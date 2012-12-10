@@ -1,0 +1,118 @@
+@import "compass/css3";
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../font/OpenSans-Bold.eot') format('embedded-opentype'),
+    url('../font/OpenSans-Bold.woff') format('woff'),
+    url('../font/OpenSans-Bold.ttf') format('truetype');
+  }
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: url('../font/OpenSans-Semibold.eot') format('embedded-opentype'),
+    url('../font/OpenSans-Semibold.woff') format('woff'),
+    url('../font/OpenSans-Semibold.ttf') format('truetype');
+  }
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: url('../font/OpenSans-Italic.eot') format('embedded-opentype'),
+    url('../font/OpenSans-Italic.woff') format('woff'),
+    url('../font/OpenSans-Italic.ttf') format('truetype');
+  }
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../font/OpenSans.eot') format('embedded-opentype'),
+    url('../font/OpenSans.woff') format('woff'),
+    url('../font/OpenSans.ttf') format('truetype');
+  }
+
+/* ==== GENERAL ============================================================= */
+
+$nt_width_container: 960px;
+$nt_pad_container: 20px;
+$nt_width_container_full: $nt_width_container + 2 * $nt_pad_container;
+
+@mixin nt-background-opacity($color, $opacity: 0.3) {
+  background: $color;
+  background: rgba($color, $opacity);
+  }
+
+@mixin nt-gradient-vert($values...) {
+  @include background-image(linear-gradient(top, $values));
+  }
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: transparent;
+  overflow: hidden;
+  }
+
+input, button, select, textarea {
+  font-family: 'Open Sans', sans-serif;
+  }
+
+a, a:hover {
+  text-decoration: none;
+  cursor: pointer;
+  }
+
+a.nt-link {
+  color: #557DC6;
+  text-decoration: underline;
+  }
+
+a:focus { outline-style: none; }
+
+#container {
+  width: $nt_width_container;
+  margin-top: 60px;
+  margin-bottom: $nt_pad_container;
+  overflow: hidden;
+  }
+
+/* ==== ALERT =============================================================== */
+/* NOTE: bootstrap alert extension */
+
+#alert {
+  position: fixed;
+  z-index: 10000;
+  width: 400px;
+  left: -225px;
+  margin-left: 50%;
+
+  &.alert-info {
+    border: 1px solid #BBD2BC;
+    background-color: #DCF7DD;
+    h4 {
+      color: #4183C4;
+      }
+    }
+
+  &.large {
+    width: 500px;
+    left: -275px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    font-size: 14px;
+
+    h4 {
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 5px;
+      }
+    }
+
+  > div {
+    text-align: center;
+    }
+  }

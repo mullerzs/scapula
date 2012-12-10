@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Jasmine Spec Runner</title>
+    <!-- TODO: index.html from one source -->
+
+    <link rel="shortcut icon" type="image/png" href="js/libs/jasmine/jasmine_favicon.png">
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="../css/fullcalendar.css" />
+    <link rel="stylesheet" type="text/css" href="../css/kalendae.css" />
+    <link rel="stylesheet" type="text/css" href="js/libs/jasmine/jasmine.css" />
+
+    <script type="text/javascript">
+      /*    (function() {
+      var jasmineEnv = jasmine.getEnv();
+      jasmineEnv.updateInterval = 1000;
+
+      var trivialReporter = new jasmine.TrivialReporter();
+
+      jasmineEnv.addReporter(trivialReporter);
+
+      jasmineEnv.specFilter = function(spec) {
+      return trivialReporter.specFilter(spec);
+      };
+
+      var currentWindowOnload = window.onload;
+
+      window.onload = function() {
+      if (currentWindowOnload) {
+      currentWindowOnload();
+      }
+      execJasmine();
+      };
+
+      function execJasmine() {
+      jasmineEnv.execute();
+      }
+
+      })();*/
+    </script>
+
+  </head>
+
+  <body>
+    <div id="alert" class="alert" style="display: none">
+      <a class="close" href="#">&times;</a>
+      <h4 class="alert-heading"></h4>
+      <div></div>
+    </div>
+
+    <div id="container"></div>
+
+    <script type="text/javascript" src="js/libs/jasmine/jasmine.js"></script>
+    <script type="text/javascript" src="js/libs/jasmine/jasmine-html.js"></script>
+    <script>
+      var ntConfig = {
+        // TODO: config variables should be provided by the server
+        route  : 'login',
+        locale : 'en',
+        base   : '/'
+      };
+    </script>
+    <script data-main="js/main" src="../js/libs/require.js"></script>
+  </body>
+</html>
