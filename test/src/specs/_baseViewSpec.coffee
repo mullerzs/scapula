@@ -5,8 +5,6 @@ define (require) ->
   BaseCollections = require 'basecollections'
   utils = require 'utils'
 
-  require 'bootstrap'
-
   class TestView extends BaseViews.View
     initialize: ->
       @template = '<div id="foo">{{vars.foo}}</div>' +
@@ -81,20 +79,12 @@ define (require) ->
               expect(method).toHaveBeenCalled()
 
             exp =
-              'foo'  : utils.encodeHtml @testView.tplvars.foo
+              'foo'  : $.ntEncodeHtml @testView.tplvars.foo
               'bar'  : @testView.tplvars.bar
               'part' : @testView.partials.part
 
             for id of exp
               expect( @testView.$el.find('#' + id).html() ).toEqual exp[id]
-
-        # --------------------------
-        describe 'After DOM add', ->
-          it 'runs post init after DOM add', ->
-            spyOn(@testView, 'afterDomAdd').andCallThrough()
-            @testView.renderDom()
-            expect(@testView.afterDomAdd).toHaveBeenCalled()
-            expect( @testView.$el.find('#part') ).toHaveClass 'foobar'
 
         # -------------------
         describe 'Events', ->

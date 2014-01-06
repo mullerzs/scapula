@@ -1,11 +1,10 @@
 define
   root:
-    # GENERAL
-    copyright      : 'Copyright'
-    all_rights_res : 'All rights reserved.'
-    login          : 'Log In'
-    logout         : 'Logout'
-    ok             : 'OK'
-    cancel         : 'Cancel'
+    login   : 'Login'
+    logout  : 'Logout'
+    search  : 'Search'
+    n_items : '#{n item|items}'
 
-  'hu' : true
+    # MESSAGES
+    error_internal : 'Internal error!'
+    error_req      : 'Request error!'

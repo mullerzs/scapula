@@ -1,1 +1,1 @@
-moment-1.7.2.min.js
+moment-2.5.0.min.js

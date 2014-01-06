@@ -42,6 +42,12 @@ define (require) ->
 
     utils.throwError err, 'ajax' if err
 
+    ### DEBUG
+    d = new Date()
+    debugUrlParams = '_=' + d.getTime() + '&_o=' + d.getTimezoneOffset()
+    opts.url += (if opts.url.match /\?/ then '&' else '?') + debugUrlParams
+    ###
+
     opts
 
   ajax._processError = (error) ->
@@ -55,10 +61,10 @@ define (require) ->
     else if error?
       ret = [ code: error ]
 
-    unauth = _.filter ret, (err) ->
+    unauth = _.find ret, (err) ->
       err.code in [ 'error_sestimeout', 'error_unauth' ]
 
-    vent.trigger 'ajax:unauth', unauth[0].code if unauth.length
+    vent.trigger 'ajax:unauth', unauth.code if unauth
 
     if ret.length then ret else undefined
 
@@ -69,19 +75,19 @@ define (require) ->
         ajax.progCnt++
         vent.trigger 'ajax:show'
 
-    if !opts.processData?
-      opts.processData = false if opts.type isnt 'GET'
-      if opts.type in [ 'POST', 'PUT' ] && _.isObject opts.data
-        opts.data = JSON.stringify opts.data
+    if !opts.processData? && opts.type isnt 'GET'
+      opts.processData = false
+      opts.data = JSON.stringify opts.data if _.isObject opts.data
 
-    $.ajax(opts).pipe( (data, textStatus, jqXHR) ->
-      if !data?.success
+    $.ajax(opts).then( (data, textStatus, jqXHR) ->
+      if data?.success
+        data = data.content || {}
+        dfd.resolve.call @, data, textStatus, jqXHR if dfd
+      else
         error = ajax._processError data?.error
         vent.trigger 'ajax:error', [ code: 'error_internal' ] unless error
         ret = $.Deferred().reject error
         dfd.reject error if dfd
-      else if dfd
-        dfd.resolve.call @, data, textStatus, jqXHR
 
       ret || jqXHR
 

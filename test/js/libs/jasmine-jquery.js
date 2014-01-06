@@ -1,1 +1,1 @@
-jasmine-jquery-1.3.1.js
+jasmine-jquery-1.7.0.js

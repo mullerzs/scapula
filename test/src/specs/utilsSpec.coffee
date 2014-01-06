@@ -1,28 +1,10 @@
 define (require) ->
   utils = require 'utils'
+  moment = require 'moment'
 
   ret =
     test: ->
       describe 'utils', ->
-        decPattern = "< Test >  test\n&"
-        encPattern = '&lt; Test &gt;&nbsp;&nbsp;test<br/>&amp;'
-
-        it 'decodeHtml Basic', ->
-          out = utils.decodeHtml encPattern
-          expect(out).toEqual decPattern
-
-        it 'decodeHtml Spaces & Newlines', ->
-          out = utils.decodeHtml '   Test  &nbsp;test<br/> <br>'
-          expect(out).toEqual "Test  test"
-
-        it 'encodeHtml Basic', ->
-          out = utils.encodeHtml decPattern
-          expect(out).toEqual encPattern
-
-        it 'encodeHtml Spaces & Newlines', ->
-          out = utils.encodeHtml "  Test\ntest Test\n"
-          expect(out).toEqual '&nbsp;&nbsp;Test<br/>test Test<br/>&nbsp;'
-
         it 'chkEmail', ->
           for str in [ 'jetli123@hero.org',
                        'HiroyukiSanada@Ninja86.jp',
@@ -47,6 +29,52 @@ define (require) ->
           expect ->
             utils.throwError 'test error'
           .toThrow new Error 'test error'
+
+        it 'calcRank', ->
+          out = utils.calcRank()
+          expect(out).toEqual 1
+
+          out = utils.calcRank 1, 2
+          expect(out).toEqual 1.5
+
+          out = utils.calcRank null, 4.5
+          expect(out).toEqual 2.25
+
+          out = utils.calcRank 5.25
+          expect(out).toEqual 6.25
+
+          expect ->
+            utils.calcRank null, '1'
+          .toThrow new Error 'Invalid parameters for calcRank'
+
+          expect ->
+            utils.calcRank { a: 'b' }
+          .toThrow new Error 'Invalid parameters for calcRank'
+
+        it 'display smart date', ->
+          # today
+          time = moment().hours(16).minutes(0)
+          expect(utils.formatDateTimeSmart(time)).toEqual '4pm'
+
+          # other day this month
+          time.date(if time.date() == 16 then 1 else 16)
+          expect(utils.formatDateTimeSmart(time))
+            .toEqual "#{time.format('D MMM')} #{time.format('ha')}"
+
+          # other year in january
+          time.year(time.year() + 2).month(0)
+          expect(utils.formatDateTimeSmart(time))
+            .toEqual "#{time.format('D MMM YYYY')} #{time.format('ha')}"
+
+          # within 6 months
+          time = moment().minutes(0).subtract('months', 5)
+          expect(utils.formatDateTimeSmart(time))
+            .toEqual "#{time.format('D MMM')} #{time.format('ha')}"
+
+          # outside 6 months
+          time = moment().minutes(0).subtract('months', 7)
+          expect(utils.formatDateTimeSmart(time))
+            .toEqual "#{time.format('D MMM YYYY')} #{time.format('ha')}"
 
         describe 'ntConfig tests', ->
           beforeEach ->
@@ -111,13 +139,17 @@ define (require) ->
 
             expect(window.ntStatus.foo).toBeUndefined()
 
-        it 'quoteMeta', ->
-          str = utils.quotemeta()
+        describe 'interpolate tests', ->
+          str = 'I have a #{dream}, #{n thing|things}'
 
-          expect(str).toEqual ''
+          it 'extracts vars correctly', ->
+            expect(utils.extractVars(str)).toEqual [ 'dream', 'n' ]
 
-          str = utils.quotemeta('A1.\\+*?[^]$()')
+          it 'interpolates strings / plurals', ->
+            intpol = utils.interpolate str, vars: dream: 'pencil', n: 1
+            expect(intpol).toEqual 'I have a pencil, 1 thing'
 
-          expect(str).toEqual 'A1\\.\\\\\\+\\*\\?\\[\\^\\]\\$\\(\\)'
+            intpol = utils.interpolate str, vars: dream: 'hero', n: 2
+            expect(intpol).toEqual 'I have a hero, 2 things'
 
   ret

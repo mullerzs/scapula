@@ -1,8 +1,9 @@
 define (require) ->
   specs =
-    utilsSpec              : require '../js/specs/utilsSpec'
-    _baseViewSpec          : require '../js/specs/_baseViewSpec'
-    _baseCollectionSpec    : require '../js/specs/_baseCollectionSpec'
+    _baseCollectionSpec : require '../js/specs/_baseCollectionSpec'
+    _baseViewSpec       : require '../js/specs/_baseViewSpec'
+    jqueryNtSpec        : require '../js/specs/jqueryNtSpec'
+    utilsSpec           : require '../js/specs/utilsSpec'
 
   ret =
     initialize : ->

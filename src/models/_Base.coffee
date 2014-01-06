@@ -8,20 +8,18 @@ define (require) ->
   # ---- Model ----------------------------------------------------------------
 
   class Base.Model extends Backbone.Model
-    constructor: (attributes, options) ->
+    constructor: (attributes, opts) ->
       super
       @_dirty = {}
 
-      @autoSave = options.autoSave if options?.autoSave?
+      @autoSave = opts.autoSave if opts?.autoSave?
       autoSaveTimeout = utils.getConfig('autoSaveTimeout') || 50
 
       @on 'change', =>
         if @_syncPrepared
-          changed = @changedAttributes() || {}
+          changed = _.omit (@changedAttributes() || {}), @internalAttrs()
 
-          for attr of changed
-            delete changed[attr] if utils.isInternalAttr attr
-          return unless _.keys(changed).length
+          return if _.isEmpty changed
 
           _.extend @_dirty, changed
 
@@ -31,31 +29,38 @@ define (require) ->
             @autoSave
 
           if autoSave
-            clearTimeout @saveTo
-            @saveTo = setTimeout =>
+            clearTimeout @_saveTo
+            @_saveTo = setTimeout =>
               @save()
             , autoSaveTimeout
 
-    set: (key, value, options) =>
+    internalAttrs: =>
+      ret = []
+      for attr of @attributes
+        if attr.match(/^_/) || attr in @_internalAttrs
+          ret.push attr
+      ret
+
+    _setArgs: (key, val, opts) =>
       if _.isObject(key) || !key?
         attrs = key
-        options = value
+        opts = val
       else
-        attrs = {}
-        attrs[key] = value
+        (attrs = {})[key] = val
 
-      options ?= {}
-      return @ unless attrs
       attrs = attrs.attributes if attrs instanceof Base.Model
-      if options.unset
-        attrs[attr] = null for attr of attrs
 
-      if @dateAttrs
+      [attrs, opts]
+
+    set: (key, val, opts) =>
+      [attrs, opts] = @_setArgs key, val, opts
+
+      if !opts?.unset && @_dateAttrs
         for attr of attrs
-          if attr in @dateAttrs
+          if attr in @_dateAttrs
             attrs[attr] = utils.dbDateToIso8601 attrs[attr]
 
-      super attrs, options
+      super attrs, opts
 
     url: =>
       url = super
@@ -65,10 +70,11 @@ define (require) ->
         url
 
     urlParams: =>
-      pars = utils.getProp(@, 'urlRootParams') || utils.getProp(@collection, 'urlParams')
+      utils.getProp(@, 'urlRootParams') ||
+        utils.getProp(@collection, 'urlParams')
 
     save: =>
-      clearTimeout @saveTo if @saveTo
+      clearTimeout @_saveTo if @_saveTo
       ret = if !@isNew() && !@isDirty()
         $.Deferred().resolve {}
       else
@@ -76,28 +82,24 @@ define (require) ->
 
       ret.done => @prepareSync()
 
+    setDirty: (attrs) =>
+      return unless attrs?
+      attrs = [ attrs ] unless _.isArray attrs
+      @_dirty[attr] = @get(attr) for attr in attrs
+
     isDirty: =>
       _.keys(@_dirty).length
 
-    saveAttrs: (attrs) =>
+    saveAttrs: (attrs, opts) =>
       return unless attrs?
 
-      attrs = [ attrs ] unless _.isArray attrs
-      @_dirty = {}
-      for attr in attrs
-        @_dirty[attr] = @get attr
+      if $.isPlainObject attrs
+        @set attrs, opts
+        attrs = _.keys attrs
 
+      @_dirty = {} if opts?.reset
+      @setDirty attrs
       @save()
-
-    undelete: =>
-      if @get 'deleted'
-        @collection?.undeleteItem id: @id
-        @set deleted: ''
-        ret = @saveAttrs 'deleted'
-      else
-        ret = $.Deferred().resolve()
-
-      ret
 
     prepareSync: =>
       @_syncPrepared = true
@@ -121,17 +123,13 @@ define (require) ->
       ret = super
 
       if opts?.skipInternal
-        for attr of ret
-          delete ret[attr] if utils.isInternalAttr attr
+        ret = _.omit ret, @internalAttrs()
 
-      filtered = opts?.attrs?.length > 0
+      if opts?.attrs?.length
+        ret = _.pick ret, opts.attrs
 
-      if filtered
-        for attr of ret
-          delete ret[attr] unless _.include opts.attrs, attr
-
-      if @dateAttrs
-        ret[attr] = utils.iso8601ToDbDate ret[attr] for attr in @dateAttrs
+      if @_dateAttrs
+        ret[attr] = utils.iso8601ToDbDate ret[attr] for attr in @_dateAttrs
 
       ret
 
@@ -149,25 +147,13 @@ define (require) ->
   class Base.ParentModel extends Base.Model
     collections: {}
 
-    set: (key, value, options) =>
-      if _.isObject(key) || !key?
-        attrs = key
-        options = value
-      else
-        attrs = {}
-        attrs[key] = value
+    set: (key, val, opts) =>
+      [attrs, opts] = @_setArgs key, val, opts
 
-      options ?= {}
-      return @ unless attrs
-      attrs = attrs.attributes if attrs instanceof Base.Model
-      if options.unset
-        attrs[attr] = null for attr of attrs
-
-      if !options.noChildren
-        _.each @collections, (props,cname) =>
+      if !opts?.unset && !opts?.noChildren
+        for cname, props of @collections
           coll = @[cname]
 
-          # TODO: create only if needed (radio/checkbox)
           if !coll
             coll = @[cname] = new props.constructor()
             coll.parentModel = @
@@ -177,32 +163,38 @@ define (require) ->
             else
               url = coll.url
               if url
-                coll.parentUrl = => utils.getProp(@, 'url')
+                if !props.fullSync
+                  coll.parentUrl = => utils.getProp(@, 'url')
                 coll.url = => utils.getProp(@, 'url') + url
 
             if props.setAttr
-              coll.on 'change', =>
-                cattrs = {}
-                cattrs[cname] = coll.toJSON()
+              coll.on 'change reset', =>
+                (cattrs = {})[cname] = coll.toJSON()
                 @set cattrs, noChildren: true
 
           if attrs.hasOwnProperty cname
             if attrs[cname]?
-              coll.reset attrs[cname], silent: true
+              coll.reset attrs[cname], { silent: true, parse: true }
             else
               @[cname] = null
 
-      super attrs, options
+      super attrs, opts
+
+    syncChildTo: (cname, coll, opts) ->
+      child = @[cname]
+      if child
+        child.syncModelsTo coll, opts
+        @set cname, child.toJSON() unless @collections[cname].setAttr
 
     toJSON: (opts) =>
       ret = super
 
       if opts?.children
-        filtered = opts?.attrs?.length > 0
         children = {}
 
-        _.each @collections, (props,cname) =>
-          return if props.setAttr || (filtered && !_.include opts.attrs, cname)
+        for cname, props of @collections
+          return if props.setAttr ||
+            (opts.attrs?.length && cname not in opts.attrs)
 
           coll = @[cname]
           if coll

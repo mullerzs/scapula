@@ -1,21 +1,23 @@
 define (require) ->
   _ = require 'underscore'
-  # NOTE: currently no langpar support for utils (langutils?)
+  vent = require 'vent'
   lang = require 'i18n!nls/lang'
+  moment = require 'moment'
 
+  require 'jquerynt'
+  require 'base64'
   require 'date'
-  require 'moment'
 
   utils =
-    REG_EMAIL      : '[-_a-z0-9]+(\\.[-_a-z0-9]+)*@[-a-z0-9]+(\\.[-a-z0-9]+)*\\.[a-z]{2,6}'
+    REG_EMAIL      : '[-_a-z0-9]+(\\.[-_a-z0-9]+)*@[-a-z0-9]+(\\.[-a-z0-9]+)' +
+                     '*\\.[a-z]{2,6}'
+    REG_DT_ISO     : '\\d{4}(-\\d{2}){2}\\s+\\d{2}(:\\d{2}){2}'
+    REG_DT_ISO8601 : '\\d{4}(-\\d{2}){2}T\\d{2}(:\\d{2}){2}'
     FMT_DT_ISO     : 'YYYY-MM-DD HH:mm:ss'
     FMT_DT_ISO8601 : 'YYYY-MM-DDTHH:mm:ss'
 
   utils.xor = (a, b) ->
     (a || b) && !(a && b)
-
-  utils.isInternalAttr = (name) ->
-    name && name.toString().match /^_/
 
   utils.extendMethod = (to, from, methodName) ->
     if _.isFunction(to[methodName]) && _.isFunction(from[methodName])
@@ -34,53 +36,30 @@ define (require) ->
       _.defaults to.events, mixin.events
     classRef
 
-  utils.getProp = (object, prop) ->
-    return null unless object && object[prop]
-    if _.isFunction object[prop] then object[prop]() else object[prop]
+  utils.getProp = (obj, prop, opts) ->
+    if opts?.attr && obj instanceof Backbone.Model
+      obj.get prop
+    else
+      _.result obj, prop
 
-  utils.getObjProp = (obj, prop) ->
-    if obj instanceof Backbone.Model then obj.get(prop) else obj[prop]
+  # obj, srcobj, props as args || props array
+  utils.adoptProps = ->
+    args = [].slice.call arguments
+    obj = args.shift()
+    srcobj = args.shift()
+    if _.isObject(obj) && _.isObject(srcobj)
+      keys = if _.isArray args[0] then args[0] else args
+      _.extend obj, _.pick srcobj, keys
 
-  utils.loadCss = (fname) ->
-    ex = 0
-    $('head link').each ->
-      if $(@).attr('href') == fname
-        ex = 1
-        return
-
-    $('head').append('<link rel="stylesheet" type="text/css" href="' + fname + '" />') unless ex
-
-  utils.chkEmail = (str) ->
-    re_email = new RegExp "^#{utils.REG_EMAIL}$", 'i'
-    if str? && str.toString().match re_email
+  utils._chkRegExp = (str, re_name) ->
+    re = new RegExp "^#{utils[re_name]}$", 'i'
+    if str? && str.toString().match re
       str
     else
       undefined
 
-  utils.encodeHtml = (str) ->
-    return str unless str?
-    str = str.toString()
-    str.replace(/&/g, '&amp;')
-       .replace(/</g, '&lt;')
-       .replace(/>/g, '&gt;')
-       .replace(/\n$/, '<br/>&nbsp;')
-       .replace(/\n/g, '<br/>')
-       .replace /\s{2,}/g, (space) ->
-         len = space.length
-         res = ''
-         res += '&nbsp;' for num in [1..len]
-         res
-
-  utils.decodeHtml = (str) ->
-    return str unless str?
-    str = str.toString()
-    $.trim str.replace(/\s+/g, ' ')
-              .replace(/&lt;/g, '<')
-              .replace(/&gt;/g, '>')
-              .replace(/&nbsp;/g, ' ')
-              .replace(/&amp;/g, '&')
-              .replace(/<br\s*\/?>$/, '')
-              .replace(/<br\s*\/?>/g, "\n")
+  utils.chkEmail = (str) ->
+    utils._chkRegExp str, 'REG_EMAIL'
 
   utils.extractKeywords = (str) ->
     ret = []
@@ -104,6 +83,50 @@ define (require) ->
     err = new Error desc
     err.name = name
     throw err
+
+  # TODO: advanced string based ranking
+  # Ranking algorithm rules:
+  # 1. For the first element choose the 2. character
+  # 2. When appending try to choose the next character in proportion to the last
+  # 3. When inserting try to calculate the median
+  #
+  # A, B, C, D, E
+  # (Q) B
+  # (Q) C   <--- before C, insert: BC
+  # (Q) D
+  # (Q) E
+  # (Q) EC  <--- before EC, insert: EB
+  # (Q) ED
+  # (Q) EE  <--- before EE, insert: EDC
+  # (Q) EEC
+  # (Q) ...
+
+  utils.calcRank = (prev,next) ->
+    if prev? && !_.isNumber(prev) || next? && !_.isNumber(next)
+      utils.throwError 'Invalid parameters for calcRank'
+
+    if prev? && !next?
+      ret = prev + 1
+    else if !prev? && next
+      ret = next / 2
+    else if prev? && next?
+      ret = (next + prev) / 2
+    else
+      ret = 1
+
+    ret
+
+  utils.numToLetters = (num) ->
+    num = parseInt num
+    return unless _.isFinite num
+
+    ret = ''
+    while num > 0
+      mod = (num - 1) % 26
+      ret = String.fromCharCode(65 + mod) + ret
+      num = parseInt((num - mod) / 26)
+
+    ret
 
   utils.cookie = (key, value, options) ->
     if arguments.length > 1 && (!/Object/.test(Object.prototype.toString.call(value)) || !value?)
@@ -143,13 +166,21 @@ define (require) ->
 
     return null
 
+  utils.decodeCookie = (key) ->
+    val = utils.cookie key
+    Base64.decode val if val?
+
   utils.getVarSrc = (src) ->
     if src is 'config' then window.ntConfig else window.ntStatus
 
   utils.getVar = (src, varname, opts) ->
     src = utils.getVarSrc src
-    if varname?
-      ret = src[varname]
+    if varname? && _.isObject src
+      varname = varname.toString().split '.'
+      ret = src
+      for i in [0 .. varname.length - 1]
+        ret = ret[varname[i]]
+
       if !opts?.ref
         if _.isArray ret
           ret = _.extend [], ret
@@ -187,40 +218,42 @@ define (require) ->
     src = utils.getVarSrc 'status'
     delete src[varname] if varname?
 
-  utils.quotemeta = (str) ->
-    str ?= ''
-    str.replace /([\.\\\+\*\?\[\^\]\$\(\)])/g, '\\$1'
+  utils.extractVars = (str) ->
+    vars = []
+    re = /#\{([^\s\}]+).*?\}/g
+    while match = re.exec str
+      vars.push match[1]
+    vars
 
   utils.interpolate = (str, opts) ->
     return str unless _.isString str
     opts ?= {}
     ivars = []
 
-    # NOTE: tag wrap turns on encoding automatically!
-    opts.encode = true if str.match /%\{(.*?)\}/
-
-    str = utils.encodeHtml str if opts.encode
-
-    # NOTE: creates span tag from %{[class]}...%/{}
-    res = str.replace /%\{(.*?)\}/g, (whole, expr) ->
-      ret = '<span'
-      ret += ' class="' + expr + '"' if expr
-      ret += '>'
-    res = res.replace /%\/\{\}/g, '</span>'
-
-    res = res.replace /#\{(.*?)\}/g, (whole, expr) ->
+    res = str.replace /#\{(.*?)\}/g, (whole, expr) ->
       if expr.match /^lang\./
         ret = lang[expr.replace /^lang\./, '']
       else if expr.match /^cfg\./
         ret = utils.getConfig(expr.replace /^cfg\./, '')
       else
+        plexpr = expr.match /^(\S+)\s+(.+)$/
+        if plexpr
+          expr = plexpr[1]
+          items = plexpr[2].split '|'
+          num = parseFloat opts.vars?[expr]
+          # TODO: support languages having more complex pluralization
+          descr = if _.isFinite(num) && items.length > 1 && num != 1
+            items[1]
+          else
+            items[0]
+
         ret = opts.vars?[expr]
+        ret += ' ' + descr if ret? && descr?
         ivars.push expr if opts.verbose
 
       if ret?
         ret = ret.toString() if _.isNumber ret
         ret = '' unless _.isString ret
-        ret = utils.encodeHtml ret if opts.encode
       else if opts.keepVar
         ret = whole
 
@@ -228,80 +261,116 @@ define (require) ->
 
     if opts.verbose then { res: res, ivars: ivars } else res
 
+  utils._sort = (a, b, opts) ->
+    ret = if b? && (!a? || a < b)
+      -1
+    else if a? && (!b? || a > b)
+      1
+
+    ret *= -1 if ret && opts?.desc
+    ret
+
   utils.sort = (a, b, props, opts) ->
+    opts ?= {}
     ret = 0
+
     if props
       props = [ props ] unless _.isArray props
       for prop in props
         cmp = []
+        pname = if _.isObject(prop) then prop.name else prop
+        popts = if _.isObject(prop) then _.clone(prop.opts) else {}
+        _.defaults popts, opts, attr: true
         for obj in [a, b]
-          if _.isArray prop
-            for altprop in prop
-              tmp = utils.getObjProp obj, altprop
+          if _.isArray pname
+            for altpname in pname
+              tmp = utils.getProp obj, altpname, popts
               break if tmp?
           else
-            tmp = utils.getObjProp obj, prop
+            tmp = utils.getProp obj, pname, popts
 
-          if opts?.natural && _.isString tmp
-            tmp = tmp.replace(/(\d+)/g, "0000000000$1").replace(/0*(\d{10,})/g, "$1").replace(/@/g,' ')
+          if popts.natural && _.isString tmp
+            tmp = tmp.replace(/(\d+)/g, "0000000000$1")
+              .replace(/0*(\d{10,})/g, "$1").replace(/@/g,' ')
             tmp = tmp.toLowerCase()
-          tmp ?= ''
           cmp.push tmp
 
-        if cmp[0] < cmp[1]
-          ret = -1
-        else if cmp[0] > cmp[1]
-          ret = 1
+        ret = utils._sort.apply @, cmp.concat(popts)
         break if ret
     else
-      if a < b
-        ret = -1
-      else if a > b
-        ret = 1
-
-    ret *= -1 if opts?.desc
-    ret
-
-  utils.hexColorToRGBSum = (h) ->
-    # TODO: 3 length hex
-    red = parseInt h.substring(0,2), 16
-    green = parseInt h.substring(2,4), 16
-    blue = parseInt h.substring(4,6), 16
-
-    return (red << 16) + (green << 8) + blue
-
-  utils.isLightColor = (color) ->
-    if utils.hexColorToRGBSum(color) < 10000000 then true else false
-
-  utils.colorScale = (val, opts) ->
-    opts ?= {}
-
-    val = parseFloat val
-    if _.isFinite val
-      inverse = true if val < 0
-      val = Math.abs val
-      max = if inverse then Math.abs(opts.min) else opts.max
-
-      if _.isNumber(max) && max && val <= max
-        if opts.logarithmic
-          val = Math.log(val + 1)
-          max = Math.log(max + 1)
-
-        ret =
-          'background-color' : if inverse then 'red' else 'green'
-          'opacity'          : val / max
-
-        if opts.string
-          str = ''
-          for k of ret
-            str += ';' if str
-            str += k + ': ' + ret[k]
-          ret = str
+      ret = utils._sort a, b, opts
 
     ret
+
+  utils.processByFuncs = (val, funcs, ctx) ->
+    return val unless funcs?
+
+    funcs = [ funcs ] unless _.isArray funcs
+    for func in funcs
+      f = if _.isFunction(func)
+        func
+      else if _.isFunction(utils[func])
+        utils[func]
+
+      val = f.call ctx, val if f
+
+    val
+
+  utils.splitName = (str) ->
+    str = $.trim str
+    lname = if str.match /,/
+      arr = str.split(/\s*,\s*/)
+      arr.shift()
+    else
+      arr = str.split(/\s+/)
+      arr.pop()
+
+    fname = arr.join ' '
+
+    [ $.trim(fname), $.trim(lname) ]
+
+  utils.joinName = (first, last) ->
+    names = []
+    names.push n for n in [ $.trim(first), $.trim(last) ] when n
+    names.join ' '
+
+  utils.parseJSON = (str) ->
+    try
+      ret = JSON.parse str
+    ret
+
+  utils.getProtocol = ->
+    window.location?.protocol
+
+  utils.getHost = ->
+    window.location?.host
+
+  utils.getOrigin = ->
+    utils.getProtocol() + '//' + utils.getHost()
+
+  utils.shareUrlSocial = (url, prov) ->
+    base = if prov is 'FB'
+      'https://www.facebook.com/sharer/sharer.php?u='
+    else
+      'https://plus.google.com/share?url='
+
+    base + encodeURIComponent(url)
+
+  utils.mailtoLink = (recip, opts) ->
+    lnk = "mailto:#{recip}"
+    if _.isEmpty opts
+      lnk
+    else
+      params = []
+      for param of opts
+        params.push param + '=' + encodeURIComponent(opts[param])
+      lnk + '?' + params.join('&')
 
   utils.isValidDbDate = (str) ->
-    str && str.toString().match /^\d{4}(-\d{2}){2}\s+\d{2}(:\d{2}){2}$/
+    utils._chkRegExp str, 'REG_DT_ISO'
+
+  utils.isValidIso8601Date = (str) ->
+    utils._chkRegExp str, 'REG_DT_ISO8601'
 
   utils.parseDbDate = (str) ->
     if utils.isValidDbDate str
@@ -312,9 +381,6 @@ define (require) ->
   utils.dbDateToIso8601 = (str) ->
     m = utils.parseDbDate str
     if _.isObject(m) then m.format(utils.FMT_DT_ISO8601) else str
-
-  utils.isValidIso8601Date = (str) ->
-    str && str.toString().match /^\d{4}(-\d{2}){2}T\d{2}(:\d{2}){2}$/
 
   utils.iso8601ToDbDate = (str) ->
     if utils.isValidIso8601Date str
@@ -344,39 +410,68 @@ define (require) ->
         'hh:mm', 'h:mma', 'hh:mma', 'hh:mm a',
         'h:mm a', 'ha', 'h a', 'hh a', 'h:mm'
       ]
+      ret = null unless ret && utils.isValidDate ret
 
     ret
 
-  utils.formatDate = (dm,opts) ->
+  utils.formatDate = (dm, opts) ->
+    opts ?= {}
     m = if dm? && _.isString dm
       utils.parseDate dm
     else
       dm
 
     if m
-      if opts?.time then utils._formatDateTime m else utils._formatDate m
+      if opts.time
+        utils._formatDateTime m
+      else if opts.short
+        utils._formatShortDate m
+      else
+        utils._formatDate m
     else
       ''
 
-  utils.formatDateTime = (dm,opts) ->
-    utils.formatDate dm, _.extend opts || {}, time: true
+  utils.formatDateTime = (dm, opts) ->
+    utils.formatDate dm, _.extend {}, opts, time: true
 
-  utils.formatTime = (dm,opts) ->
+  utils.formatDateTimeSmart = (dm, opts) ->
+    # TODO: more intelligence: omitting year, using yesterday, tomorrow etc.
+    m = if dm? && _.isString dm
+      utils.parseDate dm
+    else
+      dm
+
+    return '' unless m
+
+    time_format = if m.minutes() is 0
+      utils.getConfig('time_only_hour_format') || 'ha'
+    else
+      utils.getConfig('time_format') || 'h:mma'
+
+    if moment().format('YYYY-MM-DD') is moment(m).format('YYYY-MM-DD')
+      m.format time_format
+    else
+      m.format(if utils.isDateWithinAYear m
+        (utils.getConfig('short_date_format') || 'D MMM') + " #{time_format}"
+      else
+        (utils.getConfig('date_format') || 'D MMM YYYY') + " #{time_format}")
+
+  utils.formatTime = (dm, opts) ->
     m = if dm? && _.isString dm
       utils.parseTime dm
     else
       dm
 
-    if m
-      utils._formatTime m
-    else
-      ''
+    if m then utils._formatTime m else ''
 
   utils._formatDate = (m) ->
-    m.format(utils.getConfig('dateformat') || 'D MMM YYYY')
+    m.format(utils.getConfig('date_format') || 'D MMM YYYY')
 
   utils._formatTime = (m) ->
-    m.format(utils.getConfig('timeformat') || 'h:mm a')
+    m.format(utils.getConfig('time_format') || 'h:mm a')
+
+  utils._formatShortDate = (m) ->
+    m.format(utils.getConfig('short_date_format') || 'D MMM')
 
   utils._formatDateTime = (m) ->
     # TODO: datetime format
@@ -386,12 +481,19 @@ define (require) ->
     m = moment dm
     m.format(utils.getConfig('monthformat') || 'MMMM YYYY')
 
+  utils.isDateWithinAYear = (m) ->
+    input = moment(m)
+    input.isAfter(moment().subtract('months', 6)) &&
+      input.isBefore(moment().add('months', 6))
+
   utils.isValidDate = (m) ->
     m? && m.toDate().toString() != 'Invalid Date' && 2000 < m.year() < 2099
 
   utils.isValidTime = (m) ->
-    m? && (d = m.toDate()).toString() != 'Invalid Date' &&
-      (d.getHours() != 0 || d.getMinutes() != 0 || d.getSeconds() != 0)
+    _.isObject(m) && (d = m.toDate()).toString() != 'Invalid Date' &&
+      (0 <= d.getHours() <= 23) &&
+      (0 <= d.getMinutes() <= 59) &&
+      (0 <= d.getSeconds() <= 59)
 
   utils.isDateBetween = (sdate, edate, date) ->
     date = new Date() unless date?
@@ -405,6 +507,9 @@ define (require) ->
   utils.joinIsoDateTime = (dtarr, sep) ->
     sep = 'T' unless sep
     if _.isArray(dtarr) then dtarr.join(sep) else ''
+
+  utils.getFmtDateTime = (fmt) ->
+    moment().format fmt
 
   utils.getIsoDateTime = (opts) ->
     opts ?= {}
@@ -482,15 +587,11 @@ define (require) ->
 
     size
 
-  utils.formatPct = (pct) ->
-    pct = parseFloat pct unless _.isNumber pct
-    if _.isFinite pct
-      pct = Math.round((pct * 100).toFixed(2)) + '%'
-    else
-      # TODO: common lang na for all?
-      pct = lang.na_pct
-
-    pct
+  utils.roundTo = (val, prec) ->
+    val = parseFloat val
+    if _.isFinite val
+      prec = if _.isFinite(prec) then prec else 0
+      parseFloat val.toFixed prec
 
   utils.mean = (arr) ->
     arrLen = arr?.length
@@ -501,26 +602,33 @@ define (require) ->
       mean = arr[0]
     mean
 
-  utils.extractEmails = (str) ->
-    re_email = new RegExp "(?:([^@]+)\s*<#{utils.REG_EMAIL}>|#{utils.REG_EMAIL})", 'gi'
-    emails_matched = str?.toString().match re_email
+  utils.stDev = (arr) ->
+    mean = utils.mean arr
+    l = arr.length
 
-    emails = []
-    _.each emails_matched, (user_email) ->
-      name = null
-      email = user_email
-      if user_email.match /</
-        tmp = user_email.split /</
-        name = $.trim tmp[0]
-        email = $.trim tmp[1]
+    sum = 0
+    while l--
+      sum += Math.pow(arr[l] - mean, 2)
+    Math.sqrt(sum / (arr.length || 1))
 
-      email = email.replace />/, ''
+  utils.reloadPage = (opts) ->
+    opts ?= {}
+    window.location.href = opts?.href || window.location.href
 
-      user = email: email
-      user.name = name if name
+  utils.randomGuid = (length) ->
+    length ?= 32
+    possible = 'abcdef0123456789'
 
-      emails.push user
+    text = ''
+    text += possible.charAt(Math.floor(Math.random() * possible.length)) \
+      for i in [ 1 .. length ]
+    text
 
-    emails
+  utils.getIframeDocument = (iframe) ->
+    return null unless iframe
+    if iframe.contentWindow
+      iframe.contentWindow.document
+    else
+      iframe.contentDocument
 
   utils
