@@ -1,5 +1,5 @@
 define (require) ->
-  baseviews = require 'baseviews'
+  Base = require 'baseviews'
   utils = require 'utils'
   # tpl = require 'text!tpls/__template.html'
 
