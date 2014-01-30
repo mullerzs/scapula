@@ -1,4 +1,4 @@
-require [ '../../js/config' ], ->
+require [ '../../js/require-config' ], ->
   require [ 'jquery' ], ->
     require [ '../test/js/spec-runner'
               '../test/js/libs/jasmine-jquery'

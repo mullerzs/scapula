@@ -45,7 +45,7 @@ define (require) ->
 
     # console.log 'Loading view: ' + view
     requireView = (View) =>
-      app.view = new View opts
+      app.view = new View _.extend el: '#container', opts
 
       ### resize?
       app.view.$el.css 'height', 'auto'

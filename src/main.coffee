@@ -1,4 +1,4 @@
-require [ 'config' ], ->
+require [ 'require-config' ], ->
   require [ 'jquerynt' ], ->
     require [ 'app' ], (app) ->
       app.initialize()

@@ -24,7 +24,7 @@ define (require) ->
         name:
           selector: '#selector'
           elAttribute: 'href'
-          converter: @myConverter      
+          converter: @myConverter
       ###
 
     initDomEvents: =>
