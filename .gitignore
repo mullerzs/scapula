@@ -1,9 +1,0 @@
-js/*.js
-js/collections
-js/models
-js/nls
-js/views
-test/js/*.js
-test/js/specs
-.sass-cache
-css/*.css

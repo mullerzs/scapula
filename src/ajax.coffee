@@ -31,6 +31,9 @@ define (require) ->
   ajax.post = (opts, qid) ->
     ajax.send 'POST', opts, qid
 
+  ajax.put = (opts, qid) ->
+    ajax.send 'PUT', opts, qid
+
   ajax._setOpts = (type, opts) ->
     opts = $.extend {}, ajax.defaults, opts
     opts.type = if type && type in types then type else 'GET'
@@ -42,6 +45,11 @@ define (require) ->
 
     utils.throwError err, 'ajax' if err
 
+    if (auth = utils.getConfig 'auth') &&
+        (auth_header = utils.getConfig 'auth_header')
+      opts.headers ?= {}
+      opts.headers[auth_header] = auth
+
     ### DEBUG
     d = new Date()
     debugUrlParams = '_=' + d.getTime() + '&_o=' + d.getTimezoneOffset()
@@ -50,7 +58,7 @@ define (require) ->
 
     opts
 
-  ajax._processError = (error) ->
+  ajax._processError = (error, opts) ->
     ret = []
 
     if _.isObject error
@@ -60,13 +68,22 @@ define (require) ->
         ret.push err if _.isObject(err) && err.code
     else if error?
       ret = [ code: error ]
+    else
+      ret = [ code: 'error_internal' ]
 
-    unauth = _.find ret, (err) ->
-      err.code in [ 'error_sestimeout', 'error_unauth' ]
+    handled = opts?._errors
+    unhandled = if handled
+      if _.isBoolean handled
+        if handled then [] else ret
+      else
+        handled = [ handled ] unless _.isArray handled
+        _.reject ret, (err) -> err.code in handled
+    else
+      ret
 
-    vent.trigger 'ajax:unauth', unauth.code if unauth
+    vent.trigger 'sync:error', unhandled if unhandled.length
 
-    if ret.length then ret else undefined
+    ret
 
   ajax._ajax = (opts, dfd) ->
     opts.beforeSend = ->
@@ -84,18 +101,16 @@ define (require) ->
         data = data.content || {}
         dfd.resolve.call @, data, textStatus, jqXHR if dfd
       else
-        error = ajax._processError data?.error
-        vent.trigger 'ajax:error', [ code: 'error_internal' ] unless error
+        error = ajax._processError data?.error, opts
         ret = $.Deferred().reject error
         dfd.reject error if dfd
 
-      ret || jqXHR
+      ret || $.Deferred().resolve data, textStatus, jqXHR
 
     , (jqXHR, textStatus, errorThrown) ->
-      vent.trigger 'ajax:error', [ code: 'error_req' ]
-
-      dfd.reject() if dfd
-      $.Deferred().reject()
+      error = ajax._processError 'error_req', opts
+      dfd.reject error if dfd
+      $.Deferred().reject error
     ).always ->
       # vent.trigger 'ajax:end'
       vent.trigger 'ajax:hide' unless opts.noloader || --ajax.progCnt

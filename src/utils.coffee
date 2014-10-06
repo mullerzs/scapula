@@ -1,7 +1,6 @@
 define (require) ->
   _ = require 'underscore'
   vent = require 'vent'
-  lang = require 'i18n!nls/lang'
   moment = require 'moment'
 
   require 'jquerynt'
@@ -9,12 +8,17 @@ define (require) ->
   require 'date'
 
   utils =
-    REG_EMAIL      : '[-_a-z0-9]+(\\.[-_a-z0-9]+)*@[-a-z0-9]+(\\.[-a-z0-9]+)' +
-                     '*\\.[a-z]{2,6}'
-    REG_DT_ISO     : '\\d{4}(-\\d{2}){2}\\s+\\d{2}(:\\d{2}){2}'
-    REG_DT_ISO8601 : '\\d{4}(-\\d{2}){2}T\\d{2}(:\\d{2}){2}'
-    FMT_DT_ISO     : 'YYYY-MM-DD HH:mm:ss'
-    FMT_DT_ISO8601 : 'YYYY-MM-DDTHH:mm:ss'
+    REG_EMAIL  : '[-_a-z0-9]+(\\.[-_a-z0-9]+)*@[-a-z0-9]+(\\.[-a-z0-9]+)' +
+                 '*\\.[a-z]{2,6}'
+    REG_IP     : '([01]?\\d\\d?|2[0-4]\\d|25[0-5])' +
+                 '(\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])){3}'
+    REG_DT_DB  : '\\d{4}(-\\d{2}){2}\\s+\\d{2}(:\\d{2}){2}(\\.\\d+)?'
+    REG_DT_ISO : '\\d{4}(-\\d{2}){2}T\\d{2}(:\\d{2}){2}(\\.\\d{1,3})?'
+    FMT_DT_DB  : 'YYYY-MM-DD HH:mm:ss'
+    FMT_DT_ISO : 'YYYY-MM-DDTHH:mm:ss'
+
+  for fmt in [ 'FMT_DT_DB', 'FMT_DT_ISO' ]
+    utils[fmt + '_MS'] = utils[fmt] + '.SSS'
 
   utils.xor = (a, b) ->
     (a || b) && !(a && b)
@@ -35,6 +39,20 @@ define (require) ->
       _.defaults to, mixin
       _.defaults to.events, mixin.events
     classRef
+
+  utils.obj2Array = (obj, opts) ->
+    ret = []
+    if _.isObject obj
+      keyname = opts?.keyname || 'type'
+      for key, val of obj
+        val = if _.isObject val
+          _.clone val
+        else
+          value: val
+        val[keyname] = key
+        ret.push val
+
+    ret
 
   utils.getProp = (obj, prop, opts) ->
     if opts?.attr && obj instanceof Backbone.Model
@@ -61,21 +79,59 @@ define (require) ->
   utils.chkEmail = (str) ->
     utils._chkRegExp str, 'REG_EMAIL'
 
-  utils.extractKeywords = (str) ->
-    ret = []
+  utils.chkIP = (str) ->
+    utils._chkRegExp str, 'REG_IP'
+
+  utils.wrap = (str, wrapper, opts) ->
+    return str unless str && wrapper
+    opts ?= {}
+    qs = if _.isArray wrapper
+      wrapper
+    else if opts.split && wrapper.length > 1
+      wrapper.split ''
+    else
+      [ wrapper, wrapper ]
+
+    if opts?.quote
+      qs = _.map qs, (q) -> '\\' + q
+
+    qs[0] + str + qs[1]
+
+  utils.extractKeywords = (str, opts) ->
+    opts ?= {}
+    ret = '' : []
     str = $.trim str.toString() if str?
     if str
-      qre = /\"\s*(.+?)\s*\"/g
-      while kw = qre.exec str
-        str = str.replace kw[1], ''
-        ret.push kw[1]
+      opts = '"' : '' if _.isEmpty opts
 
-      str = str.replace /\"\s*\"/g, ''
-      str = $.trim str
+      _sortFunc = (a, b) ->
+        if a[1] < b[1]
+          1
+        else if a[1] > b[1]
+          -1
+        else
+          0
 
-      ret = ret.concat str.split /\s+/ if !ret.length || str?.length
+      markitems = _.pairs opts
+      markitems.sort _sortFunc
 
-    ret
+      for markitem in markitems
+        [mark, type] = markitem
+        ret[type] ?= []
+
+        qre = utils.wrap '(.*?)', mark, quote: true, split: true
+        str = str.replace new RegExp(qre, 'g'), (match, capture, pos) ->
+          capture = $.trim capture
+          ret[type].push [capture, pos] if capture
+          Array(match.length + 1).join(' ')
+
+      str = str.replace /(\S+)/g, (match, capture, pos) ->
+        ret[''].push [capture, pos]
+
+      for type of ret
+        ret[type] = _.map ret[type].sort(_sortFunc).reverse(), (arr) -> arr[0]
+
+    if _.keys(ret).length == 1 then ret[''] else ret
 
   utils.throwError = (desc,name) ->
     name = 'Error' unless name?
@@ -179,6 +235,9 @@ define (require) ->
       varname = varname.toString().split '.'
       ret = src
       for i in [0 .. varname.length - 1]
+        if !_.isObject ret
+          ret = undefined
+          break
         ret = ret[varname[i]]
 
       if !opts?.ref
@@ -225,41 +284,19 @@ define (require) ->
       vars.push match[1]
     vars
 
-  utils.interpolate = (str, opts) ->
-    return str unless _.isString str
-    opts ?= {}
-    ivars = []
+  utils.maxVersion = ->
+    args = [].slice.call arguments
+    limit = 4
+    _.max args, (arg) ->
+      arg = arg.toString().split '.'
+      arg.splice limit
+      _.reduce arg, (memo, val, idx) ->
+        val = if _.isFinite(val) then parseInt(val) else 0
+        memo + (Math.pow(10, (limit - idx) * 3) * val)
+      , 0
 
-    res = str.replace /#\{(.*?)\}/g, (whole, expr) ->
-      if expr.match /^lang\./
-        ret = lang[expr.replace /^lang\./, '']
-      else if expr.match /^cfg\./
-        ret = utils.getConfig(expr.replace /^cfg\./, '')
-      else
-        plexpr = expr.match /^(\S+)\s+(.+)$/
-        if plexpr
-          expr = plexpr[1]
-          items = plexpr[2].split '|'
-          num = parseFloat opts.vars?[expr]
-          # TODO: support languages having more complex pluralization
-          descr = if _.isFinite(num) && items.length > 1 && num != 1
-            items[1]
-          else
-            items[0]
-
-        ret = opts.vars?[expr]
-        ret += ' ' + descr if ret? && descr?
-        ivars.push expr if opts.verbose
-
-      if ret?
-        ret = ret.toString() if _.isNumber ret
-        ret = '' unless _.isString ret
-      else if opts.keepVar
-        ret = whole
-
-      ret
-
-    if opts.verbose then { res: res, ivars: ivars } else res
+  utils.isNewerVersion = (v1, v2) ->
+    v1 isnt v2 && utils.maxVersion(v1, v2) is v2
 
   utils._sort = (a, b, opts) ->
     ret = if b? && (!a? || a < b)
@@ -356,6 +393,13 @@ define (require) ->
 
     base + encodeURIComponent(url)
 
+  utils.link = (link, opts) ->
+    opts ?= {}
+    text = $.ntEncodeHtml opts.text || link.replace /^https?:\/\//, ''
+    ret = "<a href=\"#{link}\""
+    ret += " target=\"#{opts.target}\"" if opts.target
+    ret + ">#{text}</a>"
+
   utils.mailtoLink = (recip, opts) ->
     lnk = "mailto:#{recip}"
     if _.isEmpty opts
@@ -366,25 +410,43 @@ define (require) ->
         params.push param + '=' + encodeURIComponent(opts[param])
       lnk + '?' + params.join('&')
 
+  utils.getFrac = (str, opts) ->
+    frac = str?.toString().match(/\.\d+$/)?[0]
+    if frac
+      prec = opts?.prec || 3
+      frac = frac.substr(0, prec + 1)
+    frac
+
   utils.isValidDbDate = (str) ->
+    utils._chkRegExp str, 'REG_DT_DB'
+
+  utils.isValidIsoDate = (str) ->
     utils._chkRegExp str, 'REG_DT_ISO'
 
-  utils.isValidIso8601Date = (str) ->
-    utils._chkRegExp str, 'REG_DT_ISO8601'
+  utils.isSameDay = (d1, d2) ->
+    return false unless d1? && d2?
+    utils.formatDate(d1, iso: true) is utils.formatDate(d2, iso: true)
 
   utils.parseDbDate = (str) ->
     if utils.isValidDbDate str
-      moment.utc(str, utils.FMT_DT_ISO).local()
+      moment.utc(str).local()
     else
       str
 
-  utils.dbDateToIso8601 = (str) ->
+  utils.dbDateToIso = (str) ->
     m = utils.parseDbDate str
-    if _.isObject(m) then m.format(utils.FMT_DT_ISO8601) else str
+    if _.isObject m
+      fmt = m.format utils.FMT_DT_ISO
+      fmt += frac if frac = utils.getFrac(str)
+      fmt
+    else
+      str
 
-  utils.iso8601ToDbDate = (str) ->
-    if utils.isValidIso8601Date str
-      moment(str).utc().format utils.FMT_DT_ISO
+  utils.isoToDbDate = (str) ->
+    if utils.isValidIsoDate str
+      fmt = moment(str).utc().format utils.FMT_DT_DB
+      fmt += frac if frac = utils.getFrac(str)
+      fmt
     else
       str
 
@@ -395,37 +457,72 @@ define (require) ->
     else
       if _.isString dm
         dm = utils.parseDbDate dm
-        dm = Date.parse dm unless _.isObject dm
+
+        if _.isString(dm) && !utils.isValidIsoDate(dm)
+          dm = if dm.toLowerCase() is 'now'
+            utils.getDateTime()
+          else
+            Date.parse dm
 
       ret = moment dm
 
     ret
 
   utils.parseTime = (dm, opts) ->
-    dt = dm if _.isString dm
+    opts ?= {}
+
+    if _.isString dm
+      dt = dm
+      dm = $.trim dm
+      if _.isFinite dm
+        dm += 'a'
+      else if _.isFinite dm.replace /\s+/g, ''
+        dm = dm.replace /\s+/g, ':'
+
     ret = utils.parseDate dm, opts
 
     if dt && !utils.isValidTime ret
       ret = moment dt, [
         'hh:mm', 'h:mma', 'hh:mma', 'hh:mm a',
         'h:mm a', 'ha', 'h a', 'hh a', 'h:mm'
-      ]
+      ], true
       ret = null unless ret && utils.isValidDate ret
+
+    if ret && opts.ampmBorderHour && ret.hours() < 12 &&
+        ret.hours() < opts.ampmBorderHour
+      ret.add 12, 'hours'
 
     ret
 
+  utils.parseMidnight = (str) ->
+    if _.isString str
+      str.match(/(\s|^)12(:00?){0,2}\s*a/) ||
+        str.match(/(\s|^)00?(:00?){0,2}(\s|$)/)
+    else
+      false
+
   utils.formatDate = (dm, opts) ->
     opts ?= {}
-    m = if dm? && _.isString dm
-      utils.parseDate dm
+    m = if utils.isMoment dm
+      dm.clone()
     else
-      dm
+      utils.parseDate dm
 
     if m
       if opts.time
-        utils._formatDateTime m
+        if opts.iso || opts.db
+          m = m.utc() if opts.db
+          fmt = 'FMT_DT_' + (if opts.iso then 'ISO' else 'DB')
+          m.format utils[ fmt + (if opts.ms then '_MS' else '') ]
+        else
+          utils._formatDateTime m
       else if opts.short
         utils._formatShortDate m
+      else if opts.iso || opts.db
+        m = m.utc() if opts.db
+        m.format utils.FMT_DT_DB.split(' ')[0]
+      else if opts.format
+        m.format opts.format
       else
         utils._formatDate m
     else
@@ -435,6 +532,8 @@ define (require) ->
     utils.formatDate dm, _.extend {}, opts, time: true
 
   utils.formatDateTimeSmart = (dm, opts) ->
+    opts = _.extend time: true, opts
+
     # TODO: more intelligence: omitting year, using yesterday, tomorrow etc.
     m = if dm? && _.isString dm
       utils.parseDate dm
@@ -443,18 +542,22 @@ define (require) ->
 
     return '' unless m
 
-    time_format = if m.minutes() is 0
-      utils.getConfig('time_only_hour_format') || 'ha'
-    else
-      utils.getConfig('time_format') || 'h:mma'
-
-    if moment().format('YYYY-MM-DD') is moment(m).format('YYYY-MM-DD')
-      m.format time_format
-    else
-      m.format(if utils.isDateWithinAYear m
-        (utils.getConfig('short_date_format') || 'D MMM') + " #{time_format}"
+    if opts.time
+      time_format = if m.minutes() is 0
+        utils.getConfig('time_only_hour_format') || 'ha'
       else
-        (utils.getConfig('date_format') || 'D MMM YYYY') + " #{time_format}")
+        utils.getConfig('time_format') || 'h:mma'
+
+    fmt = if utils.getDateTime('YYYY-MM-DD') is moment(m).format('YYYY-MM-DD')
+      time_format
+    else
+      dfmt = if !opts.showYear && utils.isDateWithinAYear m
+        utils.getConfig('short_date_format') || 'D MMM'
+      else
+        utils.getConfig('date_format') || 'D MMM YYYY'
+      if time_format then "#{dfmt} #{time_format}" else dfmt
+
+    if fmt then m.format fmt else opts.todayStr || 'Today'
 
   utils.formatTime = (dm, opts) ->
     m = if dm? && _.isString dm
@@ -462,7 +565,13 @@ define (require) ->
     else
       dm
 
-    if m then utils._formatTime m else ''
+    if m
+      if opts?.format
+        m.format opts.format
+      else
+        utils._formatTime m
+    else
+      ''
 
   utils._formatDate = (m) ->
     m.format(utils.getConfig('date_format') || 'D MMM YYYY')
@@ -483,8 +592,9 @@ define (require) ->
 
   utils.isDateWithinAYear = (m) ->
     input = moment(m)
-    input.isAfter(moment().subtract('months', 6)) &&
-      input.isBefore(moment().add('months', 6))
+    now = utils.getDateTime()
+    input.isAfter(now.clone().subtract('months', 6)) &&
+      input.isBefore(now.add('months', 6))
 
   utils.isValidDate = (m) ->
     m? && m.toDate().toString() != 'Invalid Date' && 2000 < m.year() < 2099
@@ -495,11 +605,19 @@ define (require) ->
       (0 <= d.getMinutes() <= 59) &&
       (0 <= d.getSeconds() <= 59)
 
+  utils.isMoment = (obj) ->
+    moment.isMoment obj
+
   utils.isDateBetween = (sdate, edate, date) ->
-    date = new Date() unless date?
-    sdate = date unless sdate?
-    edate = date unless edate?
-    sdate <= date <= edate
+    date = if date? then utils.parseDate(date) else utils.getDateTime()
+    sdate = if sdate? then utils.parseDate(sdate) else date
+    edate = if edate? then utils.parseDate(edate) else date
+
+    (sdate.isBefore(date) || sdate.isSame(date)) &&
+      (edate.isAfter(date) || edate.isSame(date))
+
+  utils.isToday = (m) ->
+    m.startOf('day').isSame utils.getDateTime().startOf 'day'
 
   utils.splitIsoDateTime = (dt) ->
     if _.isString(dt) then dt.split /[\s+T]/ else []
@@ -508,12 +626,18 @@ define (require) ->
     sep = 'T' unless sep
     if _.isArray(dtarr) then dtarr.join(sep) else ''
 
-  utils.getFmtDateTime = (fmt) ->
-    moment().format fmt
+  utils.getDateTime = (fmt) ->
+    dt = moment()
+    offset = utils.getConfig 'time_offset_ms'
+    dt.add parseInt(offset), 'milliseconds' if offset
+    if fmt then dt.format(fmt) else dt
+
+  utils.getTimeMs = ->
+    utils.getDateTime().valueOf()
 
   utils.getIsoDateTime = (opts) ->
     opts ?= {}
-    d = new Date()
+    d = utils.getDateTime().toDate()
     opts.year ?= d.getFullYear()
     opts.month ?= d.getMonth()
     opts.day ?= d.getDate()
@@ -524,7 +648,7 @@ define (require) ->
     d = new Date(opts.year, opts.month, opts.day, opts.hour, opts.min, opts.sec)
 
     m = moment(d)
-    m.format utils.FMT_DT_ISO8601
+    m.format utils.FMT_DT_ISO
 
   utils.getIsoDate = (opts) ->
     dt = utils.getIsoDateTime opts
@@ -532,9 +656,8 @@ define (require) ->
     dt[0]
 
   utils.getIsoYearMonth = (y, m) ->
-    d = if y && m then new Date(y, m, 0) else new Date()
-    m = moment(d)
-    m.format 'YYYY-MM'
+    d = if y && m then new Date(y, m, 0) else utils.getDateTime().toDate()
+    moment(d).format 'YYYY-MM'
 
   utils.extractIsoDateTime = (opts) ->
     opts ?= {}
@@ -547,20 +670,39 @@ define (require) ->
     else
       dtarr
 
-  utils.dateAdd = (date, addValues, opts) ->
+  utils.dateAdd = (date, addValues, fmtopts) ->
     m = utils.parseDate date
+    addValues = milliseconds: addValues unless _.isObject addValues
+
     for prop of addValues
       m.add prop, addValues[prop]
-    fmt = opts?.format || utils.FMT_DT_ISO8601
-    m.format fmt
+
+    if _.isEmpty fmtopts
+      m
+    else
+      utils.formatDate m, fmtopts
 
   utils.dateDiff = (date, prop, base) ->
-    base = moment() unless base
+    base = utils.getDateTime() unless base
     date = moment date
     date.diff base, prop
 
+  utils.updateMoment = (dm, src, opts) ->
+    opts ?= {}
+    parts = if opts.parts
+      if _.isArray(opts.parts) then opts.parts else [ opts.parts ]
+    else if opts.time
+      [ 'hour', 'minute', 'second' ]
+    else if opts.date
+      [ 'year', 'month', 'date' ]
+
+    if src && parts
+      dm.set v, src.get v for v in parts
+
+    dm
+
   utils.updateIsoDateTime = (dt, opts) ->
-    fmtarr = utils.splitIsoDateTime utils.FMT_DT_ISO8601
+    fmtarr = utils.splitIsoDateTime utils.FMT_DT_ISO
     date = opts?.date
     date = moment(date).format fmtarr[0] if _.isObject date
     time = opts?.time
@@ -570,6 +712,9 @@ define (require) ->
     dtarr[1] = time if time
 
     utils.joinIsoDateTime dtarr
+
+  utils.getDuration = (val, unit) ->
+    moment.duration(val, unit)._data
 
   utils.formatFileSize = (size, opts) ->
     opts ?= {}
@@ -583,7 +728,7 @@ define (require) ->
 
       size += 'M'
     else
-      size = lang.na
+      size = opts.na ? 'NA'
 
     size
 

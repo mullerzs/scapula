@@ -1,7 +1,7 @@
 scapula
 =======
 
-Boilerplate structure built on top of Backbone & Require
+Frond-end utility library built on top of Backbone & Require
 
 Copyright (c) 2014 Zsolt Muller
 

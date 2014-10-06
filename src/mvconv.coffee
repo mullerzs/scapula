@@ -1,6 +1,12 @@
 define (require) ->
   mvconv = {}
 
+  mvconv.html = (dir, val) ->
+    if dir is 'ModelToView'
+      $.ntEncodeHtml val
+    else
+      $.ntDecodeHtml val
+
   mvconv.float = (dir, val) ->
     if dir is 'ViewToModel'
       val = parseFloat val

@@ -58,7 +58,7 @@ define (require) ->
 
         if !options.ids
           if method is 'delete'
-            data = {}
+            data || {}
           else
             attrs = options.refreshAttrs || model.refreshAttrs
             if !attrs
@@ -69,7 +69,4 @@ define (require) ->
               data = _.pick data, attrs
 
       $.Deferred().resolve data, textStatus, jqXHR
-    ).fail( (err) ->
-      vent.trigger 'api:error', method, params.url
-      vent.trigger 'save:error' unless method is 'read'
     ).done(success).fail(error)
