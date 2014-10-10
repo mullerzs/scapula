@@ -20,10 +20,10 @@ requirejs [ basedir + 'js/nls/lang.js' ], (lang) ->
     filterkeys = fs.readFileSync filterfile, 'utf8'
     filterkeys = filterkeys.split /\r?\n/
 
-  for key of lang.root
-    continue if filterkeys && key not in filterkeys
+  for key in (filterkeys || Object.keys(lang.root))
+    value = lang.root[key] || ''
     keys.push key
-    values.push lang.root[key].replace /\n/g, '\\n'
+    values.push value.replace /\n/g, '\\n'
 
   values_txt = values.join '\n'
 
