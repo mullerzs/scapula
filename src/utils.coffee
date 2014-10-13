@@ -462,7 +462,15 @@ define (require) ->
           dm = if dm.toLowerCase() is 'now'
             utils.getDateTime()
           else
-            Date.parse dm
+            m = moment dm, utils.getConfig('date_format'), true
+            if m.isValid()
+              m
+            else
+              m = moment dm, utils.getConfig('short_date_format'), true
+              if m.isValid()
+                m
+              else
+                Date.parse dm
 
       ret = moment dm
 
