@@ -527,7 +527,9 @@
       @$el.select()
 
     changeInput: (e) =>
-      dm = @opts.parser @$el.val()
+      val = @$el.val().trim().toLowerCase()
+      val = 'today' if @opts.todayStr && val is @opts.todayStr.toLowerCase()
+      dm = @opts.parser val
 
       if typeof dm is 'object' && dm.isValid && dm.isValid()
         @result = @$el.val()
