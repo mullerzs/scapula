@@ -825,12 +825,12 @@
       return if @$el.hasClass @opts.modalShowClass
 
       @$bg = $('<div>').addClass(@opts.bgClass).appendTo('body')
-        .fadeIn(@opts.bgFadeTime, =>
+        .fadeIn @opts.bgFadeTime, =>
           @$el.addClass @opts.modalShowClass
           @_showTimer = setTimeout =>
             @$el.trigger 'showmodal'
+            @$bg.on 'click', @triggerBgClick
           , @opts.transitionTime
-        ).on 'click', @triggerBgClick
 
     hide: (opts) =>
       clearTimeout @_showTimer
