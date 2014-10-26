@@ -462,12 +462,12 @@ define (require) ->
           dm = if dm.toLowerCase() is 'now'
             utils.getDateTime()
           else
-            m = moment dm, utils.getConfig('date_format'), true
-            if m.isValid()
+            df = utils.getConfig('date_format') || 'D MMM YYYY'
+            if (m = moment dm, df, true).isValid()
               m
             else
-              m = moment dm, utils.getConfig('short_date_format'), true
-              if m.isValid()
+              df = utils.getConfig('short_date_format') || 'D MMM'
+              if (m = moment dm, df, true).isValid()
                 m
               else
                 Date.parse dm
