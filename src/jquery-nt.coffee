@@ -929,8 +929,9 @@
         @$tabs.filter tab
 
       if $tab
-        @$tabs.removeClass @opts.activeClass
-        $tab.addClass @opts.activeClass
+        @$tabs.not($tab).removeClass @opts.activeClass
+        if !$tab.hasClass @opts.activeClass
+          $tab.addClass(@opts.activeClass).trigger 'activate'
         @scroll $tab
 
     destroy: =>
