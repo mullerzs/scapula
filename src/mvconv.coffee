@@ -44,4 +44,7 @@ define (require) ->
       val = '#' + val if val?
     val
 
+  mvconv.bool = (dir, val) ->
+    !!val if dir is 'ModelToView'
+
   mvconv
