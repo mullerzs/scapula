@@ -28,4 +28,10 @@ define (require) ->
       module.boolClass selector, cname
     ]
 
+  module.text = (selector) ->
+    module._generic selector, 'text'
+
+  module.html = (selector) ->
+    module._generic selector, 'html', mvconv.html
+
   module
