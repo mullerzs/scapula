@@ -19,15 +19,6 @@ define (require) ->
       if dir is 'ModelToView'
         if val then cname else ''
 
-  module.checkbox = (selector, cname) ->
-    cname ?= 'nt-checked'
-
-    [
-      selector: "#{selector} input"
-    ,
-      module.boolClass selector, cname
-    ]
-
   module.text = (selector) ->
     module._generic selector, 'text'
 
