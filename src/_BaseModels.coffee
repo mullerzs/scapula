@@ -152,8 +152,9 @@ define (require) ->
 
     set: (key, val, opts) =>
       [attrs, opts] = @_setArgs key, val, opts
+      opts ?= {}
 
-      if !opts?.unset && !opts?.noChildren
+      if !opts.unset && !opts.noChildren
         for cname, props of @collections
           coll = @[cname]
 

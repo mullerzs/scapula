@@ -23,6 +23,11 @@ define (require) ->
   utils.xor = (a, b) ->
     (a || b) && !(a && b)
 
+  utils.capitalize = (str) ->
+    return unless str?
+    str = str.toString()
+    str.charAt(0).toUpperCase() + str.slice(1)
+
   utils.extendMethod = (to, from, methodName) ->
     if _.isFunction(to[methodName]) && _.isFunction(from[methodName])
       old = to[methodName]

@@ -44,20 +44,15 @@ define (require) ->
 
       @$el.data 'backbone-view', @
 
-      @adoptOptions 'template', 'partials'
+      @adoptOptions 'template', 'partials', 'modelBindOnRender'
 
       if _.isFunction @initTplVars
         @tplvars ?= {}
         @initTplVars()
 
-      if _.isFunction @initModelDomBindings
-        @modelDomBindings ?= {}
-        if !@modelBindOnRender?
-          @modelBindOnRender = if @options.modelBindOnRender?
-            @options.modelBindOnRender
-          else
-            true
-        @initModelDomBindings()
+      @modelBindOnRender ?= true
+
+      @initModelDomBindings() if _.isFunction @initModelDomBindings
 
       # initialize view, DOM, notifier events
       for type in [ 'Events', 'DomEvents', 'NotifierSub' ]
