@@ -253,6 +253,31 @@
     $(@)
 
 
+  # TODO: handle when container is smaller than item
+  $.fn.ntScrollToMe = (opts) ->
+    opts ?= {}
+
+    $cont = if opts.container
+      $(@).closest(opts.container)
+    else
+      $(@).parent()
+
+    cont_sctop = $cont.scrollTop()
+    cont_h = $cont.height()
+    offtop = $(@)[0].offsetTop
+    h = $(@).outerHeight()
+    shift = opts.shift || 0
+
+    dst = if offtop - cont_sctop + h > cont_h
+      offtop + h - cont_h + shift
+    else if offtop < cont_sctop
+      offtop - shift
+
+    $cont.animate scrollTop: dst, opts.speed || 200 if dst?
+
+    $(@)
+
+
   # ---- Class based plugins --------------------------------------------------
 
   # ---- Plugin register helpers ----------------------------------------------
