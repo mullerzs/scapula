@@ -113,6 +113,9 @@ define (require) ->
       @_dirty = {} if opts?.clear
       @toJSON attrs: _.keys(attrs)
 
+    invertAttr: (attr) =>
+      @set attr, !@get attr
+
     fetch: =>
       @deferData = super.done( =>
         @trigger 'fetch'
