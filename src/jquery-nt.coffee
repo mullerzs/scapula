@@ -370,7 +370,7 @@
   class plugins.Radio extends plugins.Checkbox
     defaults:
       'contClass'    : 'nt-radio'
-      'markTemplate' : '<div><i class="fa fa-circle"></i></div>'
+      'markTemplate' : '<div><i></i></div>'
       'markClass'    : 'nt-checkmark'
       'checkedClass' : 'nt-checked'
 
