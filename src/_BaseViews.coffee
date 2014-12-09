@@ -412,6 +412,8 @@ define (require) ->
       else
         utils.throwError 'No ItemView specified for the CollectionView'
 
+      @trigger 'builditemview', itemView
+
       itemView
 
     addItemView: (item, list, opts) =>
@@ -481,7 +483,11 @@ define (require) ->
       if len
         if @asyncRender
           @$el.clearQueue()
-          chunkSize = if _.isFinite @asyncRender then @asyncRender else 20
+          chunkSize = if _.isObject @asyncRender
+            @asyncRender.chunkSize
+          else
+            @asyncRender
+          chunkSize = 20 unless _.isFinite chunkSize
           dfd = $.Deferred()
           for idx in [ 0 .. len - 1 ] by chunkSize
             chunkEnd = idx + chunkSize
@@ -509,8 +515,15 @@ define (require) ->
 
     _queueRender: (chunk, lastmarker, dfd, opts) =>
       @$el.queue (next) =>
+        if _.isObject(@asyncRender) && chainEvent = @asyncRender.chainEvent
+          @listenToOnce @, 'builditemview', (itemView) =>
+            if itemView.model is chunk[chunk.length - 1]
+              @listenToOnce itemView, chainEvent, next
+
         @addItemView item, {}, opts for item in chunk
-        _.defer next
+
+        _.defer next unless chainEvent
+
         dfd.resolve() if lastmarker
 
     _postRender: =>
