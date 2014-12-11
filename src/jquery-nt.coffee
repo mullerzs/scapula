@@ -42,6 +42,16 @@
       obj[prop]
 
 
+  $.ntMergeFunc = (f1, f2) ->
+    if $.isFunction f1
+      if $.isFunction f2
+        ->
+          f1.call @, arguments
+          f2.call @, arguments
+      else
+        f1
+
+
   $.ntQuoteMeta = (str) ->
     str ?= ''
     str.replace /([\.\\\+\*\?\[\^\]\$\(\)\-\{\}\|])/g, '\\$1'
@@ -268,9 +278,9 @@
     h = $(@).outerHeight()
     shift = opts.shift || 0
 
-    dst = if offtop - cont_sctop + h > cont_h
+    dst = if !opts.top && offtop - cont_sctop + h > cont_h
       offtop + h - cont_h + shift
-    else if offtop < cont_sctop
+    else if opts.top || offtop < cont_sctop
       offtop - shift
 
     $cont.animate scrollTop: dst, opts.speed || 200 if dst?

@@ -108,7 +108,7 @@ define (require) ->
 
         rank = utils.calcRank prev, next
         item.set 'rank', rank, _.pick opts, 'init'
-        @sort silent: true if at?
+        @sort() if at?
       else
         utils.throwError 'No model item specified for sortItem'
 
