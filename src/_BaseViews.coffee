@@ -444,7 +444,7 @@ define (require) ->
 
     removeItemView: (item, list, opts) =>
       itemView = @children[item.cid]
-      itemView?.remove().done =>
+      itemView?.remove(opts).done =>
         delete @children[item.cid]
         @showEmptyView()
         @changeVisibleItems if @options.obsVisItems

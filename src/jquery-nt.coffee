@@ -985,16 +985,22 @@
       border    : '20%'
       borderMax : 100
       speed     : 500 # px / sec
+      expansion : false
 
     init: ->
       for action in [ 'start', 'stop' ]
         @$el.on "#{action}autoscroll", @[action]
 
-    start: (e) =>
+    start: (e, opts) =>
+      return if @_started
       @stop()
+      @_scrollHeight = @el.scrollHeight unless @opts.expansion
+      @_started = true
       $('body').on 'mousemove', @mouseMove
 
     stop: =>
+      delete @_scrollHeight
+      delete @_started
       $('body').off 'mousemove', @mouseMove
 
     mouseMove: (e) =>
@@ -1010,16 +1016,25 @@
         @opts.border
       border = @opts.borderMax if @opts.borderMax? && border > @opts.borderMax
 
+      scrollHeight = @_scrollHeight ? @el.scrollHeight
+
       if 0 <= x <= w
         scrollTop = if 0 <= y <= border
           0
-        else if h - border <= y <= h
-          @el.scrollHeight
+        else if h - border <= y <= h &&
+            @$el.scrollTop() + @$el.height() < scrollHeight
+          scrollHeight
 
-      @$el.stop()
       if scrollTop?
-        @$el.animate scrollTop: scrollTop,
-          parseInt(Math.abs(@$el.scrollTop() - scrollTop) / @opts.speed * 1000)
+        diff = @$el.scrollTop() - scrollTop
+        if !@$el.is(':animated') && diff
+          @$el.trigger 'scrollstart'
+          @$el.animate scrollTop: scrollTop,
+            parseInt(Math.abs(diff) / @opts.speed * 1000),
+            => @$el.trigger 'scrollstop'
+      else if @$el.is(':animated')
+        @$el.stop()
+        @$el.trigger 'scrollstop'
 
     destroy: =>
       for action in [ 'start', 'stop' ]
