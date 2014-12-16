@@ -267,14 +267,22 @@
   $.fn.ntScrollToMe = (opts) ->
     opts ?= {}
 
-    $cont = if opts.container
-      $(@).closest(opts.container)
+    offtop = $(@)[0].offsetTop
+
+    if opts.container
+      $cont = $(@).closest(opts.container)
+
+      $offel = $(@).offsetParent()
+      while $offel[0] isnt $cont[0] && $offel.closest($cont)[0]
+        offtop += $offel[0].offsetTop
+        border = parseInt $offel.css 'border-top-width'
+        offtop += border unless isNaN border
+        $offel = $offel.offsetParent()
     else
-      $(@).parent()
+      $cont = $(@).parent()
 
     cont_sctop = $cont.scrollTop()
     cont_h = $cont.height()
-    offtop = $(@)[0].offsetTop
     h = $(@).outerHeight()
     shift = opts.shift || 0
 
