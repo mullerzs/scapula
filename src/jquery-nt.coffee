@@ -61,6 +61,51 @@
     $.trim(str).match new RegExp '^' + $.ntQuoteMeta($.trim kw), 'i'
 
 
+  $.ntWrapInDiv = (str) ->
+    str ?= ''
+    $('<div>' + str + '</div>')
+
+
+  $.ntHtmlProcess = (str, opts) ->
+    str ?= ''
+    $node = $.ntWrapInDiv str
+
+    funcs = opts?.funcs || []
+    funcs = [ funcs ] if typeof(funcs) is 'string'
+
+    $node[func]() for func in funcs
+
+    $node.html()
+
+
+  $.ntVideoUrl = (vid, opts) ->
+    return unless vid
+    opts ?= {}
+    prot = opts.protocol || window.location?.protocol || 'https'
+
+    url = if !opts.type || opts.type is 'youtube'
+      if opts.iframe
+        'www.youtube-nocookie.com/embed/'
+      else
+        'www.youtube.com/watch?v='
+    else if opts.type is 'vimeo'
+      if opts.iframe
+        'player.vimeo.com/video/'
+      else
+        'vimeo.com/'
+
+    "#{prot}//#{url}#{vid}" if url
+
+
+  $.ntVideoIframe = (vid, opts) ->
+    opts = $.extend width: 320, height: 240, opts
+    src = $.ntVideoUrl vid, iframe: true, type: opts.type
+    if src
+      "<iframe frameborder=\"0\" width=\"#{opts.width}\"
+        height=\"#{opts.height}\"
+        src=\"#{src}\" allowfullscreen></iframe>"
+
+
   $.ntForceBlur = ->
     $('<input type="text" style="position: fixed; left: -10000px">')
       .appendTo('body').focus().remove()
@@ -261,6 +306,76 @@
         $(@).remove()
         opts.onDone?.call @
     $(@)
+
+
+  # TODO: options
+  $.fn.ntHtmlWrapUrl = ->
+    c_class = (c) -> '[\\w\\' + c.split('').join('\\') + ']'
+    wrap_span = (str) ->
+      '<span class="nt-wrap-url" contenteditable="false">' + str + '</span>'
+
+    base_chars = "-~/#[]@$&'*+,;="
+
+    cend = c_class base_chars
+    c = c_class base_chars + ':!?'
+
+    re_prot = "https?:\\/\\/#{c}+((\\.#{c}*#{cend})+|#{cend})"
+    re_noprot = "#{c}+(\\.#{c}*#{cend})+"
+
+    re = new RegExp "(#{re_prot}|#{re_noprot}|#{re_anchor})", 'gi'
+
+    @each ->
+      $(@).find('*').addBack().contents().filter( -> @nodeType == 3 ).each ->
+        str = @nodeValue
+        if str.match re
+          str = str.replace(/</g, ' &lt; ').replace(/>/g, ' &gt; ')
+            .replace(re, (word) ->
+              # youtube url -> iframe embedding
+              if word.match /youtube\.com\/watch.*[?&]v=([^&]+)/
+                return $.ntVideoIframe RegExp.$1
+
+              # vimeo url -> iframe embedding
+              if word.match /vimeo\.com\/(.+)$/
+                return $.ntVideoIframe RegExp.$1, type: 'vimeo'
+
+              # check host format when no protocol given
+              if !word.match /^http/
+                host = word.match(/^[^\/]+/)?[0] || ''
+                if !host.match(/^\d{1,3}(\.\d{1,3}){3}$/) &&
+                    !host.match(/[a-z]{2,6}(:\d+)?$/i)
+                  return word
+
+              href = word
+              href = 'http://' + href unless href.match /^http/
+              wrap_span '<a class="nt-link" href="' + href +
+                '" target="_blank">' + word + '</a>'
+
+            ).replace /\s?(&lt;|&gt;)\s?/g, '$1'
+
+          $(@).replaceWith str
+
+
+  # TODO: options
+  $.fn.ntHtmlUnWrapUrl = ->
+    @each ->
+      rpl = []
+
+      $(@).find('.nt-wrap-url').each ->
+        $a = $(@).find('a')
+        lnk = $a.html() || ''
+        rpl.push [ lnk, $(@) ]
+
+      $(@).find('iframe').each ->
+        src = $(@).attr 'src'
+        type = if src?.match /youtube.+embed\/(.+)$/
+          'youtube'
+        else if src?.match /vimeo\.com\/video\/(.+)$/
+          'vimeo'
+        if type
+          src = $.ntVideoUrl RegExp.$1, type: type
+          rpl.push [ src, $(@) ]
+
+      r[1].replaceWith r[0] for r in rpl
 
 
   # TODO: handle when container is smaller than item
