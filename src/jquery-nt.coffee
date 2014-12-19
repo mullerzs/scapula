@@ -322,7 +322,7 @@
     re_prot = "https?:\\/\\/#{c}+((\\.#{c}*#{cend})+|#{cend})"
     re_noprot = "#{c}+(\\.#{c}*#{cend})+"
 
-    re = new RegExp "(#{re_prot}|#{re_noprot}|#{re_anchor})", 'gi'
+    re = new RegExp "(#{re_prot}|#{re_noprot})", 'gi'
 
     @each ->
       $(@).find('*').addBack().contents().filter( -> @nodeType == 3 ).each ->
