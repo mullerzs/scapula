@@ -331,6 +331,8 @@ define (require) ->
       view.render() if opts?.render
       view.afterDomAdd() if opts?.domadd && _.isFunction view.afterDomAdd
 
+      view
+
     storeChildren: (obj, opts) =>
       @storeChild view, name, opts for name, view of obj
 

@@ -202,16 +202,10 @@ define (require) ->
 
           coll = @[cname]
           if coll
-            arr = []
-            for item, i in coll
-              model = coll.at(i)
-              if model.id
-                arr[i] = if opts.children is 'id'
-                  model.id
-                else
-                  model.attributes
-
-            children[cname] = arr
+            children[cname] = if opts.children is 'id'
+              _.compact coll.pluck 'id'
+            else
+              coll.toJSON opts
 
         ret = _.extend ret, children
 

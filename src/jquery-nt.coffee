@@ -1002,7 +1002,6 @@
     start: (e, opts) =>
       return if @_started
       @stop()
-      @_scrollHeight = @el.scrollHeight unless @opts.expansion
       @_started = true
       $('body').on 'mousemove', @mouseMove
 
@@ -1012,6 +1011,7 @@
       $('body').off 'mousemove', @mouseMove
 
     mouseMove: (e) =>
+      return unless @$el.is ':visible'
       offset = @$el.offset()
       w = @$el.outerWidth()
       h = @$el.outerHeight()
@@ -1024,7 +1024,12 @@
         @opts.border
       border = @opts.borderMax if @opts.borderMax? && border > @opts.borderMax
 
-      scrollHeight = @_scrollHeight ? @el.scrollHeight
+      scrollHeight = if @opts.expansion || !@_scrollHeight
+        @el.scrollHeight
+      else
+        @_scrollHeight
+
+      @_scrollHeight = scrollHeight unless @_scrollHeight || @opts.expansion
 
       if 0 <= x <= w
         scrollTop = if 0 <= y <= border
