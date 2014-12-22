@@ -211,6 +211,18 @@
     $(@).ntWrapInTag $.extend {}, opts, type: 'a'
 
 
+  $.ntGetCaretRange = (oe) ->
+    x = oe?.clientX
+    y = oe?.clientY
+
+    if document.caretRangeFromPoint
+      range = document.caretRangeFromPoint x, y if x? && y?
+    else if document.createRange && oe?.rangeParent
+      range = document.createRange()
+      range.setStart oe.rangeParent, oe.rangeOffset
+    range
+
+
   $.fn.ntSetCaretToEnd = ->
     el = $(@).get(0)
 
