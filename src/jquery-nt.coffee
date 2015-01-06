@@ -885,6 +885,7 @@
           .on 'mousedown', itemSelector, (e) =>
             @fillInput $(e.target).closest(itemSelector).data 'descr'
             @hideItems()
+            @$el.trigger 'clickitem'
 
       @$listEl.css width: @$el.outerWidth() if @opts.autoWidth
 
