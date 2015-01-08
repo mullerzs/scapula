@@ -1122,19 +1122,22 @@
       borderMax : 100
       speed     : 500 # px / sec
       expansion : false
+      horiz     : false
 
     init: ->
       for action in [ 'start', 'stop' ]
         @$el.on "#{action}autoscroll", @[action]
 
-    start: (e, opts) =>
+      @start() if @opts.start
+
+    start: =>
       return if @_started
       @stop()
       @_started = true
       $('body').on 'mousemove', @mouseMove
 
     stop: =>
-      delete @_scrollHeight
+      delete @_scrollSize
       delete @_started
       $('body').off 'mousemove', @mouseMove
 
@@ -1146,33 +1149,46 @@
       x = e.pageX - offset.left
       y = e.pageY - offset.top
 
+      if @opts.horiz
+        size = pri: w, sec: h
+        pos = pri: x, sec: y
+      else
+        size = pri: h, sec: w
+        pos = pri: y, sec: x
+
       border = if @opts.border.match /\%$/
-        h * parseInt(@opts.border) / 100
+        size.pri * parseInt(@opts.border) / 100
       else
         @opts.border
       border = @opts.borderMax if @opts.borderMax? && border > @opts.borderMax
 
-      scrollHeight = if @opts.expansion || !@_scrollHeight
-        @el.scrollHeight
+      scrollSize = if @opts.expansion || !@_scrollSize
+        if @opts.horiz then @el.scrollWidth else @el.scrollHeight
       else
-        @_scrollHeight
+        @_scrollSize
 
-      @_scrollHeight = scrollHeight unless @_scrollHeight || @opts.expansion
+      @_scrollSize = scrollSize unless @_scrollSize || @opts.expansion
 
-      if 0 <= x <= w
-        scrollTop = if 0 <= y <= border
+      scrollPos = if @opts.horiz then @$el.scrollLeft() else @$el.scrollTop()
+      contSize = if @opts.horiz then @$el.width() else @$el.height()
+
+      if 0 <= pos.sec <= size.sec
+        scrollSide = if 0 <= pos.pri <= border
           0
-        else if h - border <= y <= h &&
-            @$el.scrollTop() + @$el.height() < scrollHeight
-          scrollHeight
+        else if size.pri - border <= pos.pri <= size.pri &&
+            scrollPos + contSize < scrollSize
+          scrollSize
 
-      if scrollTop?
-        diff = @$el.scrollTop() - scrollTop
+      if scrollSide?
+        diff = scrollPos - scrollSide
         if !@$el.is(':animated') && diff
           @$el.trigger 'scrollstart'
-          @$el.animate scrollTop: scrollTop,
-            parseInt(Math.abs(diff) / @opts.speed * 1000),
+          (aopts = {})[ if @opts.horiz then 'scrollLeft' else 'scrollTop' ] =
+            scrollSide
+
+          @$el.animate aopts, parseInt(Math.abs(diff) / @opts.speed * 1000),
             => @$el.trigger 'scrollstop'
+
       else if @$el.is(':animated')
         @$el.stop()
         @$el.trigger 'scrollstop'
