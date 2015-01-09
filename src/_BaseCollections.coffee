@@ -26,8 +26,10 @@ define (require) ->
           @sortItem item, list, addopts unless addopts?.rel
 
         if @orderUrl
-          @on 'change:' + @rankAttr, (model) =>
-            @saveOrder() unless model.isNew()
+          @on 'sort', (list, sortopts) =>
+            if sortopts?.item && (sortopts.item.autoSave || @autoSave) &&
+                !sortopts.item.isNew()
+              @saveOrder()
 
     reset: (models) =>
       if @rankAttr
@@ -110,17 +112,17 @@ define (require) ->
         else if @length > 1
           prev = @at(@length - 2)?.get 'rank'
 
-        rank = utils.calcRank prev, next
+        rank = utils.calcRank prev, next, signed: !!@orderAttr
         item.set 'rank', rank, _.pick opts, 'init'
         item.set @orderAttr, @pluck 'id' if item.isNew() && @orderAttr
-        @sort() if at?
+        @sort item: item if at?
       else
         utils.throwError 'No model item specified for sortItem'
 
     saveOrder: =>
       if @orderUrl
         Backbone.sync.call @, 'update', @,
-          url  : _.result(@, 'url') + @orderUrl
+          url  : '/api' + _.result(@, 'url') + @orderUrl
           data : @pluck 'id'
 
     _handleRel: (action, models, opts) =>

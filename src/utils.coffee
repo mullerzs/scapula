@@ -162,20 +162,21 @@ define (require) ->
   # (Q) EEC
   # (Q) ...
 
-  utils.calcRank = (prev,next) ->
+  utils.calcRank = (prev, next, opts) ->
     if prev? && !_.isNumber(prev) || next? && !_.isNumber(next)
       utils.throwError 'Invalid parameters for calcRank'
 
     if prev? && !next?
-      ret = prev + 1
-    else if !prev? && next
-      ret = next / 2
+      prev + 1
+    else if !prev? && next?
+      if opts?.signed
+        next - 1
+      else
+        next / 2
     else if prev? && next?
-      ret = (next + prev) / 2
+      (next + prev) / 2
     else
-      ret = 1
-
-    ret
+      1
 
   utils.numToLetters = (num) ->
     num = parseInt num
