@@ -25,6 +25,10 @@ define (require) ->
         @on 'add', (item, list, addopts) =>
           @sortItem item, list, addopts unless addopts?.rel
 
+        if @orderUrl
+          @on 'change:' + @rankAttr, (model) =>
+            @saveOrder() unless model.isNew()
+
     reset: (models) =>
       if @rankAttr
         if _.isArray(models)
@@ -108,9 +112,16 @@ define (require) ->
 
         rank = utils.calcRank prev, next
         item.set 'rank', rank, _.pick opts, 'init'
+        item.set @orderAttr, @pluck 'id' if item.isNew() && @orderAttr
         @sort() if at?
       else
         utils.throwError 'No model item specified for sortItem'
+
+    saveOrder: =>
+      if @orderUrl
+        Backbone.sync.call @, 'update', @,
+          url  : _.result(@, 'url') + @orderUrl
+          data : @pluck 'id'
 
     _handleRel: (action, models, opts) =>
       @[action](models, opts) unless opts?.saveOnly
