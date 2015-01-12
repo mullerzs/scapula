@@ -19,9 +19,6 @@ define (require) ->
       if dir is 'ModelToView'
         if val then cname else ''
 
-  module.text = (selector) ->
-    module._generic selector, 'text'
-
   module.html = (selector) ->
     module._generic selector, 'html', mvconv.html
 
