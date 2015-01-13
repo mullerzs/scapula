@@ -110,7 +110,7 @@ define (require) ->
           prev = siblings[at - 1]?.get 'rank'
           next = siblings[at]?.get 'rank'
         else if @length > 1
-          prev = @at(@length - 2)?.get 'rank'
+          prev = @at(@indexOf(item) - 1)?.get 'rank'
 
         rank = utils.calcRank prev, next, signed: !!@orderAttr
         item.set 'rank', rank, _.pick opts, 'init'
