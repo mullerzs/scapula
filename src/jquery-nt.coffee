@@ -1128,6 +1128,18 @@
       for action in [ 'start', 'stop' ]
         @$el.on "#{action}autoscroll", @[action]
 
+      for dir in [ 'begin', 'end' ]
+        marker = "#{dir}Marker"
+        if @opts[marker]
+          @['$' + marker] = if @opts[marker] instanceof jQuery
+            @opts[marker]
+          else
+            @$el.find @opts[marker]
+
+      @adjustMarkers()
+
+      @$el.on 'scrollstop', @adjustMarkers
+
       @start() if @opts.start
 
     start: =>
@@ -1140,6 +1152,37 @@
       delete @_scrollSize
       delete @_started
       $('body').off 'mousemove', @mouseMove
+
+    adjustMarkers: =>
+      if @$beginMarker || @$endMarker
+        scrollPos = @scrollPos()
+        scrollSize = @scrollSize()
+        contSize = @contSize()
+
+        if @$beginMarker
+          @$beginMarker.toggle !!(scrollPos > 0 && scrollSize > contSize)
+
+        if @$endMarker
+          @$endMarker.toggle !!(scrollPos + contSize < scrollSize)
+
+    pos: (pos) =>
+      @$el[ if @opts.horiz then 'scrollLeft' else 'scrollTop' ](pos)
+      @adjustMarkers()
+
+    posBegin: =>
+      @pos 0
+
+    posEnd: =>
+      @pos @scrollSize()
+
+    scrollPos: =>
+      if @opts.horiz then @$el.scrollLeft() else @$el.scrollTop()
+
+    scrollSize: =>
+      if @opts.horiz then @el.scrollWidth else @el.scrollHeight
+
+    contSize: =>
+      if @opts.horiz then @$el.width() else @$el.height()
 
     mouseMove: (e) =>
       return unless @$el.is ':visible'
@@ -1163,20 +1206,19 @@
       border = @opts.borderMax if @opts.borderMax? && border > @opts.borderMax
 
       scrollSize = if @opts.expansion || !@_scrollSize
-        if @opts.horiz then @el.scrollWidth else @el.scrollHeight
+        @scrollSize()
       else
         @_scrollSize
 
       @_scrollSize = scrollSize unless @_scrollSize || @opts.expansion
 
-      scrollPos = if @opts.horiz then @$el.scrollLeft() else @$el.scrollTop()
-      contSize = if @opts.horiz then @$el.width() else @$el.height()
+      scrollPos = @scrollPos()
 
       if 0 <= pos.sec <= size.sec
         scrollSide = if 0 <= pos.pri <= border
           0
         else if size.pri - border <= pos.pri <= size.pri &&
-            scrollPos + contSize < scrollSize
+            scrollPos + @contSize() < scrollSize
           scrollSize
 
       if scrollSide?
@@ -1196,6 +1238,8 @@
     destroy: =>
       for action in [ 'start', 'stop' ]
         @$el.off "#{action}autoscroll", @[action]
+      @$el.off 'scrollstop', @adjustMarkers
+      delete @["$#{dir}Marker"] for dir in [ 'begin', 'end' ]
       @stop()
 
 
