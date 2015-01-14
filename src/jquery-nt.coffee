@@ -469,10 +469,11 @@
 
   class plugins.Checkbox extends $._ntPluginBaseClass
     defaults:
-      'contClass'    : 'nt-checkbox'
-      'markTemplate' : '<div><i class="fa fa-check"></i></div>'
-      'markClass'    : 'nt-checkmark'
-      'checkedClass' : 'nt-checked'
+      'contClass'     : 'nt-checkbox'
+      'markTemplate'  : '<div><i class="fa fa-check"></i></div>'
+      'markClass'     : 'nt-checkmark'
+      'checkedClass'  : 'nt-checked'
+      'disabledClass' : 'nt-disabled'
 
     init: ->
       if @$el.parent()[0].nodeName.toLowerCase() isnt 'label'
@@ -485,14 +486,25 @@
       @$chk = $(@opts.markTemplate).addClass(@opts.markClass).prependTo @$cont
       @adjustChecked()
 
+      @disable() if @$el.is ':disabled'
+
       @$cont.on 'click', @click unless @labeled
       @$el.on 'change', @adjustChecked
 
     click: =>
+      return if @$cont.hasClass @opts.disabledClass
       @$el.prop('checked', !@$el.prop('checked')).trigger 'change'
 
     adjustChecked: =>
       @$cont.toggleClass @opts.checkedClass, @$el.prop('checked')
+
+    enable: =>
+      @$cont.removeClass @opts.disabledClass
+      @$el.removeAttr 'disabled'
+
+    disable: =>
+      @$cont.addClass @opts.disabledClass
+      @$el.prop 'disabled', true
 
     destroy: =>
       @$cont.off 'click', @click unless @labeled
@@ -514,12 +526,14 @@
 
   class plugins.Radio extends plugins.Checkbox
     defaults:
-      'contClass'    : 'nt-radio'
-      'markTemplate' : '<div><i></i></div>'
-      'markClass'    : 'nt-checkmark'
-      'checkedClass' : 'nt-checked'
+      'contClass'     : 'nt-radio'
+      'markTemplate'  : '<div><i></i></div>'
+      'markClass'     : 'nt-checkmark'
+      'checkedClass'  : 'nt-checked'
+      'disabledClass' : 'nt-disabled'
 
     click: =>
+      return if @$cont.hasClass @opts.disabledClass
       @$el.prop 'checked', true
 
     adjustChecked: (e) =>

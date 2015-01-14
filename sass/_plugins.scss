@@ -23,8 +23,11 @@
   }
 
 .nt-checkbox, .nt-radio {
-  cursor: pointer;
   display: inline-block;
+
+  &:not(.nt-disabled) {
+    cursor: pointer;
+    }
 
   &.nt-checked .nt-checkmark i { display: block; }
 
