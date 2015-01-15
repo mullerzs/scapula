@@ -320,8 +320,8 @@
     $(@)
 
 
-  # TODO: options
-  $.fn.ntHtmlWrapUrl = ->
+  $.fn.ntHtmlWrapUrl = (opts) ->
+    opts ?= {}
     c_class = (c) -> '[\\w\\' + c.split('').join('\\') + ']'
     wrap_span = (str) ->
       '<span class="nt-wrap-url" contenteditable="false">' + str + '</span>'
@@ -343,11 +343,11 @@
           str = str.replace(/</g, ' &lt; ').replace(/>/g, ' &gt; ')
             .replace(re, (word) ->
               # youtube url -> iframe embedding
-              if word.match /youtube\.com\/watch.*[?&]v=([^&]+)/
+              if opts.youtube && word.match /youtube\.com\/watch.*[?&]v=([^&]+)/
                 return $.ntVideoIframe RegExp.$1
 
               # vimeo url -> iframe embedding
-              if word.match /vimeo\.com\/(.+)$/
+              if opts.vimeo && word.match /vimeo\.com\/(.+)$/
                 return $.ntVideoIframe RegExp.$1, type: 'vimeo'
 
               # check host format when no protocol given
@@ -367,8 +367,8 @@
           $(@).replaceWith str
 
 
-  # TODO: options
-  $.fn.ntHtmlUnWrapUrl = ->
+  $.fn.ntHtmlUnWrapUrl = (opts) ->
+    opts ?= {}
     @each ->
       rpl = []
 
@@ -379,9 +379,9 @@
 
       $(@).find('iframe').each ->
         src = $(@).attr 'src'
-        type = if src?.match /youtube.+embed\/(.+)$/
+        type = if opts.youtube && src?.match /youtube.+embed\/(.+)$/
           'youtube'
-        else if src?.match /vimeo\.com\/video\/(.+)$/
+        else if opts.vimeo && src?.match /vimeo\.com\/video\/(.+)$/
           'vimeo'
         if type
           src = $.ntVideoUrl RegExp.$1, type: type
