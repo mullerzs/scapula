@@ -22,4 +22,7 @@ define (require) ->
   module.html = (selector) ->
     module._generic selector, 'html', mvconv.html
 
+  module.float0 = (selector, elAttribute) ->
+    module._generic selector, elAttribute, mvconv.float0
+
   module
