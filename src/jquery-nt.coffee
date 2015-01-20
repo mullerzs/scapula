@@ -97,6 +97,14 @@
     "#{prot}//#{url}#{vid}" if url
 
 
+  $.ntVideoUrlInfo = (url) ->
+    url = '' unless typeof(url) is 'string'
+    if url.match /youtube\.com\/watch.*[?&]v=([^&]+)/
+      id: RegExp.$1, type: 'youtube'
+    else if url.match /vimeo\.com\/(.+)$/
+      id: RegExp.$1, type: 'vimeo'
+
+
   $.ntVideoIframe = (vid, opts) ->
     opts = $.extend width: 320, height: 240, opts
     src = $.ntVideoUrl vid, iframe: true, type: opts.type
@@ -343,12 +351,14 @@
           str = str.replace(/</g, ' &lt; ').replace(/>/g, ' &gt; ')
             .replace(re, (word) ->
               # youtube url -> iframe embedding
-              if opts.youtube && word.match /youtube\.com\/watch.*[?&]v=([^&]+)/
-                return $.ntVideoIframe RegExp.$1
+              if opts.youtube && (videoinfo = $.ntVideoUrlInfo word) &&
+                  videoinfo.type is 'youtube'
+                return $.ntVideoIframe videoinfo.id
 
               # vimeo url -> iframe embedding
-              if opts.vimeo && word.match /vimeo\.com\/(.+)$/
-                return $.ntVideoIframe RegExp.$1, type: 'vimeo'
+              if opts.vimeo && (videoinfo = $.ntVideoUrlInfo word) &&
+                  videoinfo.type is 'vimeo'
+                return $.ntVideoIframe videoinfo.id, type: videoinfo.type
 
               # check host format when no protocol given
               if !word.match /^http/
