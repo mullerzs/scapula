@@ -64,7 +64,7 @@ define (require) ->
       [attrs, opts] = @_setArgs key, val, opts
 
       if opts?.synctype in [ 'create', 'update' ] && !opts?.ids
-        refreshAttrs = _.clone options.refreshAttrs || @refreshAttrs
+        refreshAttrs = _.clone opts.refreshAttrs || @refreshAttrs
 
         if refreshAttrs isnt true
           refreshAttrs = [] if !refreshAttrs? || refreshAttrs is false
@@ -146,6 +146,10 @@ define (require) ->
       if @_dateAttrs
         ret[attr] = utils.isoToDbDate ret[attr] for attr in @_dateAttrs
 
+      if opts?.cid
+        cidname = if _.isBoolean opts.cid then 'cid' else opts.cid
+        ret[cidname] = @cid
+
       ret
 
     duplicate: =>
@@ -155,9 +159,6 @@ define (require) ->
     cloneAttrs: (opts) =>
       ret = @toJSON opts
       delete ret.id if ret?.id
-      if opts?.cid
-        cidname = if _.isBoolean opts.cid then 'cid' else opts.cid
-        ret[cidname] = @cid
       ret
 
   # ---- ParentModel ----------------------------------------------------------
