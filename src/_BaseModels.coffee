@@ -63,6 +63,15 @@ define (require) ->
     set: (key, val, opts) =>
       [attrs, opts] = @_setArgs key, val, opts
 
+      if opts?.synctype in [ 'create', 'update' ] && !opts?.ids
+        refreshAttrs = _.clone options.refreshAttrs || @refreshAttrs
+
+        if refreshAttrs isnt true
+          refreshAttrs = [] if !refreshAttrs? || refreshAttrs is false
+          refreshAttrs = [ refreshAttrs ] unless _.isArray refreshAttrs
+          refreshAttrs.push 'id' if opts.synctype is 'create'
+          attrs = _.pick attrs, refreshAttrs
+
       if !opts?.unset
         for attr, value of attrs
           continue unless value?
@@ -146,6 +155,9 @@ define (require) ->
     cloneAttrs: (opts) =>
       ret = @toJSON opts
       delete ret.id if ret?.id
+      if opts?.cid
+        cidname = if _.isBoolean opts.cid then 'cid' else opts.cid
+        ret[cidname] = @cid
       ret
 
   # ---- ParentModel ----------------------------------------------------------
@@ -174,8 +186,12 @@ define (require) ->
 
           if attrs.hasOwnProperty cname
             if attrs[cname]?
-              coll.reset attrs[cname],
-                _.extend parse: true, props.resetOpts, _.pick opts, 'init'
+              if opts.synctype is 'create' && opts.cid
+                _.each attrs[cname], (_attrs) ->
+                  coll.get(_attrs[opts.cid])?.set _attrs, opts
+              else
+                coll.reset attrs[cname],
+                  _.extend parse: true, props.resetOpts, _.pick opts, 'init'
             else
               @[cname] = null
 
@@ -193,7 +209,7 @@ define (require) ->
     toJSON: (opts) =>
       ret = super
 
-      if opts?.children
+      if cmode = opts?.children
         children = {}
 
         for cname, props of @collections
@@ -202,8 +218,9 @@ define (require) ->
 
           coll = @[cname]
           if coll
-            children[cname] = if opts.children is 'id'
-              _.compact coll.pluck 'id'
+            ids = _.compact coll.pluck 'id'
+            children[cname] = if cmode is 'id' || cmode is 'auto' && ids.length
+              ids
             else
               coll.toJSON opts
 
