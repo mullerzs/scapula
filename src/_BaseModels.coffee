@@ -137,6 +137,8 @@ define (require) ->
     toJSON: (opts) =>
       ret = super
 
+      delete ret.id if opts?.skipId
+
       if opts?.skipInternal
         ret = _.omit ret, @internalAttrs()
 
@@ -157,9 +159,7 @@ define (require) ->
       new @constructor attrs
 
     cloneAttrs: (opts) =>
-      ret = @toJSON opts
-      delete ret.id if ret?.id
-      ret
+      @toJSON _.extend skipId: true, opts
 
   # ---- ParentModel ----------------------------------------------------------
 
