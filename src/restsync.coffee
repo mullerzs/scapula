@@ -3,7 +3,6 @@ define (require) ->
   Backbone = require 'backbone'
   ajax = require 'ajax'
   utils = require 'utils'
-  vent = require 'vent'
 
   methodMap =
     create : 'POST'
@@ -18,6 +17,9 @@ define (require) ->
 
     params = {}
     options ?= {}
+
+    options.synctype = method
+    options.cid = cidname if (cidname = utils.getConfig 'client_id_name')
 
     success = options.success
     error = options.error
@@ -44,29 +46,12 @@ define (require) ->
             [ options.ids ]
         else if !options.data && method isnt 'delete'
           params.data = if method is 'create'
-            model.cloneAttrs children: 'id', skipInternal: true
+            model.cloneAttrs
+              children     : 'auto'
+              skipInternal : true
+              cid          : options.cid
           else
             model.dirtyAttrs clear: true
 
-        vent.trigger 'save:start'
-
-    req = ajax.send type, _.extend(params, options), queueId
-
-    req.then( (data, textStatus, jqXHR) ->
-      if method isnt 'read'
-        vent.trigger 'save:ok'
-
-        if !options.ids
-          if method is 'delete'
-            data || {}
-          else
-            attrs = options.refreshAttrs || model.refreshAttrs
-            if !attrs
-              data = if method is 'create' then id: data.id else {}
-            else if !_.isBoolean attrs
-              attrs = [ attrs ] unless _.isArray attrs
-              attrs.push 'id' if method is 'create' && 'id' not in attrs
-              data = _.pick data, attrs
-
-      $.Deferred().resolve data, textStatus, jqXHR
-    ).done(success).fail(error)
+    ajax.send(type, _.extend(params, options), queueId)
+      .done(success).fail(error)
