@@ -197,7 +197,8 @@ define (require) ->
                 (cattrs = {})[cname] = coll.toJSON()
                 @set cattrs, noChildren: true
 
-          if attrs.hasOwnProperty cname
+          # TODO: refreshAttrs for child collections?
+          if attrs.hasOwnProperty(cname) && opts.synctype isnt 'update'
             if attrs[cname]?
               if opts.synctype is 'create' && opts.cid
                 _.each attrs[cname], (_attrs) ->
