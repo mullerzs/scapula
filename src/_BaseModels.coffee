@@ -122,8 +122,20 @@ define (require) ->
       @_dirty = {} if opts?.clear
       @toJSON attrs: _.keys(attrs)
 
-    invertAttr: (attr) =>
-      @set attr, !@get attr
+    toggleAttr: (attr, bool, opts) =>
+      if !opts? && _.isObject bool
+        opts = bool
+        bool = undefined
+
+      bool ?= !@get attr
+
+      if bool || opts?.invert
+        @set attr, !!bool, opts
+      else
+        @unset attr, opts
+
+    invertAttr: (attr, opts) =>
+      @toggleAttr attr, _.extend invert: true, opts
 
     fetch: =>
       @deferData = super.done( =>
