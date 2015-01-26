@@ -675,6 +675,69 @@
       delete @[elem] for elem in [ '$options', '$box' ]
 
 
+  # ---- Menu -----------------------------------------------------------------
+  # TODO: more options & consider merging with Dropdown
+
+  class plugins.Menu extends $._ntPluginBaseClass
+    defaults:
+      menuClass : 'nt-dd-opts'
+      appendTo  : 'body'
+
+    init: ->
+      @$menu = if @opts.items instanceof jQuery
+        @opts.items
+      else
+        $items = $('<ul>')
+
+        (@opts.items || []).forEach (item, idx) ->
+          $item = $('<li>')
+          $a = $('<a>')
+          text = if $.isPlainObject item
+            id = item.id if item.id
+            item.text
+          else
+            item
+
+          $a.html $.ntEncodeHtml text
+          $item.data 'id', id if id
+          $items.append $item.append $a
+
+        $('<div>').append $items
+
+      @$menu.addClass(@opts.menuClass).hide().on 'click', 'li', @clickItem
+      @$menu.appendTo $(@opts.appendTo) if @opts.appendTo
+
+      @$el.click @toggleMenu
+      $(document).on 'click', @clickDoc
+
+    toggleMenu: =>
+      if @$menu.is ':visible' then @hideMenu() else @showMenu()
+
+    showMenu: =>
+      return if @$menu.is ':visible'
+      offset = @$el.offset()
+      @$menu.css(
+        top  : offset.top + @$el.outerHeight()
+        left : offset.left
+      ).fadeIn 'fast'
+
+    hideMenu: =>
+      return unless @$menu.is ':visible'
+      @$menu.fadeOut 'fast'
+
+    clickItem: (e) =>
+      $item = $(e.target).closest('li')
+      @$el.trigger 'clickitem', $item.data('id') || $item.index()
+
+    clickDoc: (e) =>
+      @hideMenu() unless $(e.target).closest(@$el)[0]
+
+    destroy: ->
+      @$el.off 'click', @showMenu
+      $(document).off 'click', @clickDoc
+      @$menu.remove()
+      delete @$menu
+
   # ---- DatePicker -----------------------------------------------------------
 
   class plugins.DatePicker extends $._ntPluginBaseClass

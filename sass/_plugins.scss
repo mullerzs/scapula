@@ -2,22 +2,22 @@
   position: relative;
 
   .nt-dd { overflow: hidden; }
+  }
 
-  .nt-dd-opts {
-    display: none;
-    position: absolute;
+.nt-dd-opts {
+  display: none;
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  z-index: 1;
+
+  ul {
+    overflow-y: auto;
     margin: 0;
     padding: 0;
-    z-index: 1;
 
-    ul {
-      overflow-y: auto;
-      margin: 0;
-      padding: 0;
-
-      li {
-        list-style-type: none;
-        }
+    li {
+      list-style-type: none;
       }
     }
   }
