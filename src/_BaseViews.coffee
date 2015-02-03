@@ -474,7 +474,7 @@ define (require) ->
 
       @closeChildren noremove: true
 
-      if !opts.reset || !@rendered?
+      if !opts?.reset || !@rendered?
         @$el.empty()
         @renderTpl() if @template && (items.length || @emptyViewCont)
       else
