@@ -399,7 +399,8 @@ define (require) ->
       if @collection
         @listenTo @collection, 'add', @addItemView
         @listenTo @collection, 'remove', @removeItemView
-        @listenTo @collection, 'reset', @render
+        @listenTo @collection, 'reset', (list, opts) =>
+          @render list, _.extend reset: true, opts
 
     initEvents: =>
       @initCollectionEvents()
@@ -470,12 +471,16 @@ define (require) ->
 
     _render: (items, opts) =>
       @beforeRender() if _.isFunction @beforeRender
-      @rendered = false
 
       @closeChildren noremove: true
-      @$el.empty()
 
-      @renderTpl() if @template && (items.length || @emptyViewCont)
+      if !opts.reset || !@rendered?
+        @$el.empty()
+        @renderTpl() if @template && (items.length || @emptyViewCont)
+      else
+        @$itemCont.empty()
+
+      @rendered = false
 
       @renderItems items, opts
 
