@@ -34,6 +34,9 @@ define (require) ->
   ajax.put = (opts, qid) ->
     ajax.send 'PUT', opts, qid
 
+  ajax.delete = (opts, qid) ->
+    ajax.send 'DELETE', opts, qid
+
   ajax._setOpts = (type, opts) ->
     opts = $.extend {}, ajax.defaults, opts
     opts.type = if type && type in types then type else 'GET'
