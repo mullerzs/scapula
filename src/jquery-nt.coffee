@@ -1236,6 +1236,7 @@
       $('body').on 'mousemove', @mouseMove
 
     stop: =>
+      @$el.stop()
       delete @_scrollSize
       delete @_started
       $('body').off 'mousemove', @mouseMove
