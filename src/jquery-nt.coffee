@@ -1236,10 +1236,15 @@
       $('body').on 'mousemove', @mouseMove
 
     stop: =>
-      @$el.stop()
+      @_stop()
       delete @_scrollSize
       delete @_started
       $('body').off 'mousemove', @mouseMove
+
+    _stop: =>
+      if @$el.is ':animated'
+        @$el.stop()
+        @$el.trigger 'scrollstop'
 
     adjustMarkers: =>
       if @$beginMarker || @$endMarker
@@ -1318,10 +1323,8 @@
 
           @$el.animate aopts, parseInt(Math.abs(diff) / @opts.speed * 1000),
             => @$el.trigger 'scrollstop'
-
-      else if @$el.is(':animated')
-        @$el.stop()
-        @$el.trigger 'scrollstop'
+      else
+        @_stop()
 
     destroy: =>
       for action in [ 'start', 'stop' ]
