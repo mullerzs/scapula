@@ -403,6 +403,7 @@ define (require) ->
           @render list, _.extend reset: true, opts
 
     initEvents: =>
+      super
       @initCollectionEvents()
 
     buildItemView: (item) =>
