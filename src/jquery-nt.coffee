@@ -1189,7 +1189,7 @@
       if $tab
         @$tabs.not($tab).removeClass @opts.activeClass
         if !$tab.hasClass @opts.activeClass
-          $tab.addClass(@opts.activeClass).trigger 'activate'
+          $tab.addClass(@opts.activeClass).trigger 'tabactivate'
         @scroll $tab
 
     destroy: =>
