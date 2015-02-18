@@ -103,6 +103,7 @@ define (require) ->
     sortItem: (item, list, opts) =>
       if item
         at = if _.isNumber opts.at then opts.at else null
+        from = @indexOf item
         if at?
           siblings = list.without item
           at = 0 if at < 0
@@ -110,12 +111,12 @@ define (require) ->
           prev = siblings[at - 1]?.get 'rank'
           next = siblings[at]?.get 'rank'
         else if @length > 1
-          prev = @at(@indexOf(item) - 1)?.get 'rank'
+          prev = @at(from - 1)?.get 'rank'
 
         rank = utils.calcRank prev, next, signed: !!@orderAttr
         item.set 'rank', rank, _.pick opts, 'init'
         item.set @orderAttr, @pluck 'id' if item.isNew() && @orderAttr
-        @sort item: item if at?
+        @sort item: item, from: from if at?
       else
         utils.throwError 'No model item specified for sortItem'
 
