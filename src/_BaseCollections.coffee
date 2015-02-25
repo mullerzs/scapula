@@ -13,7 +13,8 @@ define (require) ->
       options ?= {}
 
       utils.adoptProps @, options, 'baseUrl', 'url', 'urlParams', 'autoSave',
-        'modelDefaults', 'rankAttr', 'noSync', 'relType'
+        'modelDefaults', 'rankAttr', 'orderAttr', 'orderUrl', 'noSync',
+        'relType'
 
       url = utils.getProp @, 'url'
       @url = @baseUrl + url if @baseUrl && url
