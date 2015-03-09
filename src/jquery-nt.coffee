@@ -155,14 +155,26 @@
 
 
   $.ntSelectOptions = (opts) ->
+    opts ?= {}
     ret = ''
-    for opt in (opts?.options || [])
-      if typeof opt is 'object' && opt.value?
-        value = $.ntEncodeHtml opt.value
-        descr = if opt.descr? then $.ntEncodeHtml opt.descr else value
-        ret += "<option value=\"#{value}\""
-        ret += ' selected="selected"' if opt.sel
-        ret += ">#{descr}</option>"
+
+    _buildOption = (_opt) ->
+      if $.isPlainObject(_opt) && _opt.value?
+        value = $.ntEncodeHtml _opt.value
+        descr = if _opt.descr? then $.ntEncodeHtml _opt.descr else value
+        _ret = "<option value=\"#{value}\""
+        _ret += ' selected="selected"' if _opt.sel
+        _ret + ">#{descr}</option>"
+
+    if $.isArray opts.optgroups
+      for optgroup in opts.optgroups
+        if $.isPlainObject(optgroup) && optgroup.label? &&
+            $.isArray(optgroup.options) && optgroup.options.length
+          ret += "<optgroup label=\"#{$.ntEncodeHtml optgroup.label}\">"
+          ret += _buildOption option for option in optgroup.options
+          ret += '</optgroup>'
+    else if $.isArray opts.options
+      ret += _buildOption option for option in opts.options
 
     ret
 
