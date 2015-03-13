@@ -33,7 +33,7 @@ define (require) ->
               @saveOrder()
 
     reset: (models, opts) =>
-      if @rankAttr
+      if models? && @rankAttr
         models = [ models ] unless _.isArray models
         unranked = _.find models, (model) =>
           if model instanceof Backbone.Model
