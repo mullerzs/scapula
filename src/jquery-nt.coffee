@@ -445,6 +445,11 @@
     $(@)
 
 
+  $.fn.ntHasOverflowWidth = ->
+    border_width = parseInt($(@).css('border-left-width') ? 0) +
+      parseInt($(@).css('border-right-width') ? 0)
+    $(@)[0].scrollWidth > $(@)[0].offsetWidth - border_width
+
   # ---- Class based plugins --------------------------------------------------
 
   # ---- Plugin register helpers ----------------------------------------------
