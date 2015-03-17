@@ -697,8 +697,11 @@
 
   class plugins.Menu extends $._ntPluginBaseClass
     defaults:
-      menuClass : 'nt-dd-opts'
-      appendTo  : 'body'
+      appendTo       : 'body'
+      menuClass      : 'nt-dd-opts'
+      itemClass      : 'nt-dd-item'
+      separatorClass : 'nt-dd-separator'
+      labelClass     : 'nt-dd-label'
 
     init: ->
       @$menu = if @opts.items instanceof jQuery
@@ -706,22 +709,33 @@
       else
         $items = $('<ul>')
 
-        (@opts.items || []).forEach (item, idx) ->
+        (@opts.items || []).forEach (item, idx) =>
           $item = $('<li>')
-          $a = $('<a>')
-          text = if $.isPlainObject item
+
+          text = $.ntEncodeHtml if $.isPlainObject item
             id = item.id if item.id
+            if item.separator || item.label
+              $item.addClass @opts.separatorClass if item.separator
+              $item.addClass @opts.labelClass if item.label
+            else
+              active = true
             item.text
           else
+            active = true
             item
 
-          $a.html $.ntEncodeHtml text
+          if active
+            $item.addClass(@opts.itemClass).append $('<a>').html text
+          else
+            $item.html text
+
           $item.data 'id', id if id
-          $items.append $item.append $a
+          $items.append $item
 
         $('<div>').append $items
 
-      @$menu.addClass(@opts.menuClass).hide().on 'click', 'li', @clickItem
+      @$menu.addClass(@opts.menuClass).hide().on \
+        'click', ".#{@opts.itemClass}", @clickItem
       @$menu.appendTo $(@opts.appendTo) if @opts.appendTo
 
       @$el.click @toggleMenu
@@ -744,7 +758,7 @@
 
     clickItem: (e) =>
       $item = $(e.target).closest('li')
-      @$el.trigger 'clickitem', $item.data('id') || $item.index()
+      @$el.trigger 'clickitem', $item.data('id') || $item.index @opts.itemClass
 
     clickDoc: (e) =>
       @hideMenu() unless $(e.target).closest(@$el)[0]
