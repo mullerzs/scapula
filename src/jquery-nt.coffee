@@ -702,6 +702,7 @@
       itemClass      : 'nt-dd-item'
       separatorClass : 'nt-dd-separator'
       labelClass     : 'nt-dd-label'
+      align          : 'left'
 
     init: ->
       @$menu = if @opts.items instanceof jQuery
@@ -746,10 +747,20 @@
 
     showMenu: =>
       return if @$menu.is ':visible'
+
       offset = @$el.offset()
+      left = offset.left
+
+      if @opts.align isnt 'left'
+        diff = @$el.outerWidth() - @$menu.outerWidth()
+        left += if @opts.align is 'center'
+          parseInt diff / 2
+        else
+          diff
+
       @$menu.css(
         top  : offset.top + @$el.outerHeight()
-        left : offset.left
+        left : left
       ).fadeIn 'fast'
 
     hideMenu: =>
