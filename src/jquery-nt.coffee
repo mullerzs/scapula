@@ -759,7 +759,7 @@
           diff
 
       @$menu.css(
-        top  : offset.top + @$el.outerHeight()
+        top  : offset.top - $(document).scrollTop() + @$el.outerHeight()
         left : left
       ).fadeIn 'fast'
 
