@@ -154,6 +154,12 @@
     ret
 
 
+  # TODO: more sophisticated check if needed
+  $.ntIsMobile = (ua) ->
+    ua = navigator.userAgent unless ua
+    ua.match /mobi/i
+
+
   $.ntSelectOptions = (opts) ->
     opts ?= {}
     ret = ''
