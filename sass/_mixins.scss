@@ -16,6 +16,12 @@
   &::-webkit-input-placeholder { @content; }
   }
 
+@mixin nt-text-size-adjust($value) {
+  -moz-text-size-adjust: $value;
+  -webkit-text-size-adjust: $value;
+  -ms-text-size-adjust: $value;
+  }
+
 @mixin nt-arrow-horizontal($h) {
   width: 0;
   height: 0;
