@@ -48,16 +48,11 @@ define (require) ->
 
     utils.throwError err, 'ajax' if err
 
-    if (auth = utils.getConfig 'auth') &&
-        (auth_header = utils.getConfig 'auth_header')
-      opts.headers ?= {}
-      opts.headers[auth_header] = auth
-
-    ### DEBUG
-    d = new Date()
-    debugUrlParams = '_=' + d.getTime() + '&_o=' + d.getTimezoneOffset()
-    opts.url += (if opts.url.match /\?/ then '&' else '?') + debugUrlParams
-    ###
+    if auth = utils.getConfig 'auth'
+      if auth_header = utils.getConfig 'auth_header'
+        (opts.headers ?= {})[auth_header] = auth
+      else
+        opts.url += (if opts.url.match /\?/ then '&' else '?') + 'auth=' + auth
 
     opts
 
