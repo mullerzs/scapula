@@ -28,4 +28,7 @@ define (require) ->
   module.float0 = (selector, elAttribute) ->
     module._generic selector, elAttribute, mvconv.float0
 
+  module.arrayify = (selector, elAttribute) ->
+    module._generic selector, elAttribute, mvconv.arrayify
+
   module

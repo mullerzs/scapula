@@ -56,4 +56,10 @@ define (require) ->
   mvconv.bool = (dir, val) ->
     !!val if dir is 'ModelToView'
 
+  mvconv.arrayify = (dir, val) ->
+    if dir is 'ModelToView'
+      if _.isArray val then val[0] else val
+    else
+      if _.isArray val then val.slice(0, 1) else [ val ]
+
   mvconv
