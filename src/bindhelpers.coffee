@@ -11,6 +11,21 @@ define (require) ->
   module.bool = (selector, elAttribute) ->
     module._generic selector, elAttribute, mvconv.bool
 
+  module.invBool = (selector, elAttribute) ->
+    module._generic selector, elAttribute,  mvconv.invBool
+
+  module.enabled = (selector) ->
+    module.bool selector, 'enabled'
+
+  module.disabled = (selector) ->
+    module.invBool selector, 'enabled'
+
+  module.displayed = (selector) ->
+    module._generic selector, 'displayed'
+
+  module.hidden = (selector) ->
+    module._generic selector, 'hidden'
+
   module.class = (selector, converter) ->
     module._generic selector, 'class', converter
 

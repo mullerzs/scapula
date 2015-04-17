@@ -56,6 +56,9 @@ define (require) ->
   mvconv.bool = (dir, val) ->
     !!val if dir is 'ModelToView'
 
+  mvconv.invBool = (dir, val) ->
+    !val if dir is 'ModelToView'
+
   mvconv.arrayify = (dir, val) ->
     if dir is 'ModelToView'
       if _.isArray val then val[0] else val
