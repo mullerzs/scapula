@@ -391,6 +391,10 @@ define (require) ->
   utils.getOrigin = ->
     utils.getProtocol() + '//' + utils.getHost()
 
+  utils.getUrlParams = ->
+    _.object _.compact _.map location.search[1..].split('&'), (item) ->
+      if item then item.split '='
+
   utils.shareUrlSocial = (url, prov) ->
     base = if prov is 'FB'
       'https://www.facebook.com/sharer/sharer.php?u='
