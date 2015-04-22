@@ -775,8 +775,8 @@ define (require) ->
     Math.sqrt(sum / (arr.length || 1))
 
   utils.reloadPage = (opts) ->
-    opts ?= {}
-    window.location.href = opts?.href || window.location.href
+    href = if _.isObject opts then opts.href else opts
+    window.location.href = href ? window.location.href
 
   utils.randomGuid = (length) ->
     length ?= 32
