@@ -125,7 +125,7 @@
     switch type?.toLowerCase()
       when 'ie' then ret = ua.match(/trident.+rv:(\d+)/i) || ua.match(/msie\s+(\d+)/i)
       when 'firefox' then ret = ua.match /firefox\/(\d+)/i
-      when 'chrome' then ret = ua.match /chrome\/(\d+)/i
+      when 'chrome' then ret = ua.match /(?:crios|chrome)\/(\d+)/i
       when 'safari' then ret = ua.match /version\/(\d+).+safari/i
 
     if ret
