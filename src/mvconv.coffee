@@ -65,4 +65,9 @@ define (require) ->
     else
       if _.isArray val then val.slice(0, 1) else [ val ]
 
+  mvconv.arrayifyCompact = (dir, val) ->
+    ret = mvconv.arrayify.apply @, arguments
+    ret = _.compact ret if dir is 'ViewToModel'
+    ret
+
   mvconv

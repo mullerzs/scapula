@@ -46,4 +46,7 @@ define (require) ->
   module.arrayify = (selector, elAttribute) ->
     module._generic selector, elAttribute, mvconv.arrayify
 
+  module.arrayifyCompact = (selector, elAttribute) ->
+    module._generic selector, elAttribute, mvconv.arrayifyCompact
+
   module
