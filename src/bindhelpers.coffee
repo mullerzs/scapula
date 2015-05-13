@@ -37,6 +37,9 @@ define (require) ->
   module.html = (selector) ->
     module._generic selector, 'html', mvconv.html
 
+  module.trimText = (selector, elAttribute) ->
+    module._generic selector, elAttribute, mvconv.trimText
+
   module.float = (selector, elAttribute) ->
     module._generic selector, elAttribute, mvconv.float
 

@@ -37,11 +37,9 @@ define (require) ->
 
   mvconv.trimText = (dir, val) ->
     if dir is 'ViewToModel'
-      val = $.trim val
+      $.trim val
     else
-      val = '' unless val?
-
-    val
+      val ? ''
 
   mvconv.seqNum = (dir, val) ->
     if dir is 'ModelToView'
