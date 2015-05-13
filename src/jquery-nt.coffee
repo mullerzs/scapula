@@ -157,7 +157,7 @@
   # TODO: more sophisticated check if needed
   $.ntIsMobile = (ua) ->
     ua = navigator.userAgent unless ua
-    ua.match /mobi/i
+    ua.match /(mobi|android)/i
 
 
   $.ntSelectOptions = (opts) ->
