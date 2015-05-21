@@ -739,7 +739,7 @@ define (require) ->
     _m = 60
     _h = 60 * _m
 
-    if secs > _h
+    if secs >= _h
       h = parseInt secs / _h
       secs = secs % _h
     m = parseInt secs / _m
