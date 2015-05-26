@@ -439,7 +439,10 @@ define (require) ->
 
   utils.parseDbDate = (str) ->
     if utils.isValidDbDate str
-      moment.utc(str).local()
+      if utils.getConfig 'disable_utc'
+        moment str
+      else
+        moment.utc(str).local()
     else
       str
 
@@ -454,7 +457,9 @@ define (require) ->
 
   utils.isoToDbDate = (str) ->
     if utils.isValidIsoDate str
-      fmt = moment(str).utc().format utils.FMT_DT_DB
+      fmt = moment str
+      fmt = fmt.utc() unless utils.getConfig 'disable_utc'
+      fmt = fmt.format utils.FMT_DT_DB
       fmt += frac if frac = utils.getFrac(str)
       fmt
     else
@@ -529,7 +534,7 @@ define (require) ->
     if m
       if opts.time
         if opts.iso || opts.db
-          m = m.utc() if opts.db
+          m = m.utc() if opts.db && !utils.getConfig 'disable_utc'
           fmt = 'FMT_DT_' + (if opts.iso then 'ISO' else 'DB')
           m.format utils[ fmt + (if opts.ms then '_MS' else '') ]
         else
@@ -537,7 +542,7 @@ define (require) ->
       else if opts.short
         utils._formatShortDate m
       else if opts.iso || opts.db
-        m = m.utc() if opts.db
+        m = m.utc() if opts.db && !utils.getConfig 'disable_utc'
         m.format utils.FMT_DT_DB.split(' ')[0]
       else if opts.format
         m.format opts.format
