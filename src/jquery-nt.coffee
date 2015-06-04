@@ -115,7 +115,7 @@
 
 
   $.ntForceBlur = ->
-    $('<input type="text" style="position: fixed; left: -10000px">')
+    $('<input type="text" style="font-size: 16px; position: fixed; left: -10000px">')
       .appendTo('body').focus().remove()
 
 
