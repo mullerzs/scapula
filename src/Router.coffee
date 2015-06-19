@@ -1,9 +1,10 @@
 define (require) ->
   vent = require 'vent'
+  utils = require 'utils'
 
   class Router extends Backbone.Router
     initialize: (opts) ->
-      @errorView = opts?.errorView
+      utils.adoptProps @, opts, 'errorView', 'errorViewOpts'
       @viewRoutes = {}
 
       @addRoute opts?.viewRoutes
@@ -49,4 +50,4 @@ define (require) ->
       if route_data
         route_data.callback.apply @, (route_data.pars || []).slice(1)
       else if @errorView
-        vent.trigger 'view:load', @errorView
+        vent.trigger 'view:load', @errorView, @errorViewOpts
