@@ -36,10 +36,10 @@ define (require) ->
       @setDomId = true
       @fadeOnRemove = true
       @options = options || {}
+      @embedded = true if @options.el
       super
 
       id = @$el.attr('id')
-      @embedded = true if !@embedded? && id && $('#' + id).get(0)
       @$el.attr('id', @model.modelid()) if !id? && @model && @setDomId
 
       @$el.data 'backbone-view', @
@@ -478,6 +478,7 @@ define (require) ->
       if !opts?.reset || !@rendered?
         @$el.empty()
         @renderTpl() if @template && (items.length || @emptyViewCont)
+        @toggleModelDomBindings true if @model && @modelBindOnRender
       else
         @$itemCont.empty()
 
