@@ -340,12 +340,17 @@ define (require) ->
       _.each @children, (child) ->
         child.render()
 
-    closeChildren: (opts) =>
-      _.each @children, (child) =>
-        @stopListening child
-        child.close opts
+    closeChildren: (children, opts) =>
+      if _.isArray(children) || !_.isObject children
+        children = [ children ] unless _.isArray children
+      else
+        opts = children
 
-      @children = {}
+      for childId, child of @children
+        if !children || childId in children
+          @stopListening child
+          child.close opts
+          delete @children[childId]
 
     close: =>
       @closed = true
