@@ -250,7 +250,8 @@ define (require) ->
               contOffset = @sharedStatus.contOffset || 0
 
               if @el.id isnt 'container'
-                h -= $offObj.offset().top - contOffset
+                h -= $offObj.offset().top - contOffset +
+                  @$el.outerHeight() - @$el.height()
 
             if pars.subtract
               $subBase = if pars.subtractBase
