@@ -766,10 +766,15 @@
         else
           diff
 
-      @$menu.css(
-        top  : offset.top - $(document).scrollTop() + @$el.outerHeight()
-        left : left
-      ).fadeIn 'fast'
+      elHeight = @$el.outerHeight()
+      menuHeight = @$menu.outerHeight()
+      windowHeight = $(window).height()
+      top = offset.top - $(document).scrollTop() + elHeight
+
+      if top + menuHeight > windowHeight && offset.top > windowHeight - top
+        top -= menuHeight + elHeight + 2 * parseInt @$menu.css 'margin-top'
+
+      @$menu.css(top: top, left: left).fadeIn 'fast'
 
     hideMenu: =>
       return unless @$menu.is ':visible'
