@@ -433,13 +433,7 @@ define (require) ->
 
       $el = itemView.render().$el
       idx = if opts?.at? then opts.at else @collection.indexOf(item)
-      children = @$itemCont.children @itemSelector
-      if idx? && idx < children.length
-        $el.insertBefore children.eq(idx)
-      else if children.length
-        $el.insertAfter children.last()
-      else
-        @$itemCont.append $el
+      @addItemEl $el, idx
 
       if !opts?.hide && @showItems && @options.showOnAdd
         @showItems[item.id] = 1
@@ -450,6 +444,15 @@ define (require) ->
 
       @trigger 'additemview', itemView, opts
       @changeVisibleItems() if @showItems && @options.obsVisItems
+
+    addItemEl: ($el, idx) ->
+      children = @$itemCont.children @itemSelector
+      if idx? && idx < children.length
+        $el.insertBefore children.eq(idx)
+      else if children.length
+        $el.insertAfter children.last()
+      else
+        @$itemCont.append $el
 
     removeItemView: (item, list, opts) =>
       itemView = @children[item.cid]
