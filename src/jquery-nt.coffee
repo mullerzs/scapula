@@ -955,6 +955,7 @@
 
   class plugins.AutoSuggest extends $._ntPluginBaseClass
     defaults:
+      appendTo        : 'body'
       inputClass      : 'nt-as-input'
       listTemplate    : '<ul></ul>'
       listClass       : 'nt-as-list'
@@ -1056,17 +1057,29 @@
       ih = @$el.outerHeight()
       top = @$el.offset().top + ih + 1
       left = @$el.offset().left
-      @$listEl.appendTo('body').show().css top: top, left: left
+
+      appendEl = if @opts.appendTo in [ 'parent', 'offsetParent' ]
+        @$el[@opts.appendTo]()
+      else
+        @opts.appendTo
+
+      # TODO: support body as object if needed
+      if @opts.appendTo isnt 'body'
+        top -= $(appendEl).offset().top
+        left -= $(appendEl).offset().left
+
+      @$listEl.appendTo(appendEl).show().css top: top, left: left
 
       # browser window outreach correction
-      ww = $(window).width()
-      lw = @$listEl.outerWidth()
-      @$listEl.css left: ww - lw if ww < left + lw
+      if @opts.appendTo is 'body'
+        ww = $(window).width()
+        lw = @$listEl.outerWidth()
+        @$listEl.css left: ww - lw if ww < left + lw
 
-      lh = @$listEl.outerHeight()
-      if top + lh > $(window).height() && (uptop = top - lh - ih - 2) > 0
-        @$listEl.find(".#{@opts.itemSearchClass}").appendTo @$listEl
-        @$listEl.css top: uptop
+        lh = @$listEl.outerHeight()
+        if top + lh > $(window).height() && (uptop = top - lh - ih - 2) > 0
+          @$listEl.find(".#{@opts.itemSearchClass}").appendTo @$listEl
+          @$listEl.css top: uptop
 
     hideItems: =>
       @$listEl?.hide()
