@@ -738,7 +738,7 @@
           else
             $item.html text
 
-          $item.data 'id', id if id
+          $item.attr 'data-id', id if id
           $items.append $item
 
         $('<div>').append $items
@@ -773,6 +773,8 @@
 
       if top + menuHeight > windowHeight && offset.top > windowHeight - top
         top -= menuHeight + elHeight + 2 * parseInt @$menu.css 'margin-top'
+
+      @$el.trigger 'showmenu', @$menu
 
       @$menu.css(top: top, left: left).fadeIn 'fast'
 
