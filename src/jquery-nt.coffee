@@ -782,6 +782,12 @@
       return unless @$menu.is ':visible'
       @$menu.fadeOut 'fast'
 
+    toggleItems: (ids, bool) =>
+      ids = [ ids ] unless $.isArray ids
+      @$menu.find(".#{@opts.itemClass}").each (idx, el) ->
+        id = $(el).data 'id'
+        $(el).toggle if bool then id in ids else id not in ids
+
     clickItem: (e) =>
       $item = $(e.target).closest('li')
       @$el.trigger 'clickitem', $item.data('id') || $item.index @opts.itemClass
