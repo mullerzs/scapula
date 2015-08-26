@@ -342,10 +342,11 @@ define (require) ->
         child.render()
 
     closeChildren: (children, opts) =>
-      if _.isArray(children) || !_.isObject children
+      if children? && (_.isArray(children) || !_.isObject children)
         children = [ children ] unless _.isArray children
       else
         opts = children
+        children = null
 
       for childId, child of @children
         if !children || childId in children
