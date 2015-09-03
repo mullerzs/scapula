@@ -672,7 +672,7 @@
         $selitem = $(val)
       else
         $items.each (i, el) ->
-          if $(el).data('value') is val.toString()
+          if $(el).data('value')?.toString() is val.toString()
             $selitem = $(el)
             return
 
@@ -683,7 +683,7 @@
           $items.removeClass @opts.selClass
           $selitem.addClass @opts.selClass
           @$box.text $selitem.text()
-          val = $selitem.data 'value'
+          val = $selitem.data('value')?.toString()
           @$el.val(val).trigger 'change' unless val is @$el.val()
 
         @toggleOptions false
