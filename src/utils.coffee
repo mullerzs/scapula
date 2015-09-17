@@ -12,6 +12,8 @@ define (require) ->
                  '*\\.[a-z]{2,6}'
     REG_IP     : '([01]?\\d\\d?|2[0-4]\\d|25[0-5])' +
                  '(\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])){3}'
+    REG_HOST   : '[a-z\\d]([a-z\\d\\-]{0,61}[a-z\\d])?' +
+                 '(\\.[a-z\\d]([a-z\\d\\-]{0,61}[a-z\\d])?)*'
     REG_DT_DB  : '\\d{4}(-\\d{2}){2}\\s+\\d{2}(:\\d{2}){2}(\\.\\d+)?'
     REG_DT_ISO : '\\d{4}(-\\d{2}){2}T\\d{2}(:\\d{2}){2}(\\.\\d{1,3})?'
     FMT_DT_DB  : 'YYYY-MM-DD HH:mm:ss'
@@ -76,16 +78,16 @@ define (require) ->
 
   utils._chkRegExp = (str, re_name) ->
     re = new RegExp "^#{utils[re_name]}$", 'i'
-    if str? && str.toString().match re
-      str
-    else
-      undefined
+    str if str?.toString().match re
 
   utils.chkEmail = (str) ->
     utils._chkRegExp str, 'REG_EMAIL'
 
   utils.chkIP = (str) ->
     utils._chkRegExp str, 'REG_IP'
+
+  utils.chkHost = (str) ->
+    utils._chkRegExp str, 'REG_HOST' if str?.toString().length <= 255
 
   utils.wrap = (str, wrapper, opts) ->
     return str unless str && wrapper

@@ -23,6 +23,22 @@ define (require) ->
           for str in [ '192', '192.168.10', 'asdf', '123.256.1.1' ]
             expect(utils.chkIP str).not.toBeTruthy()
 
+        it 'chkHost', ->
+          for str in [ 'jetli123@hero.org'
+                       '@ninja.edu'
+                       '!hello'
+                       'hello-'
+                       [11 .. 32].join('-')
+                       [8 .. 72].join('.a') ]
+            expect(utils.chkHost str).not.toBeTruthy()
+
+          for str in [ 'test'
+                       'google.com'
+                       'rambo-online.2rockets.org'
+                       [11 .. 31].join('-')
+                       [7 .. 71].join('.a') ]
+            expect(utils.chkHost str).toBeTruthy()
+
         it 'extractKeywords', ->
           tests = [
             str : '"John Doe " superhero " Jack  " '
