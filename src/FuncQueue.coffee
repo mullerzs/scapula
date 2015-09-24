@@ -9,26 +9,46 @@ define (require) ->
       @queue.push
         func     : -> fn.apply opts.scope, opts.params
         deferred : opts.deferred
-      @run() if @queue.length == 1
+      @run()
      
     dequeue: =>
-      @queue.pop() if @queue.length > 1
+      @queue.pop() if @queue.length && (!@running || @queue.length > 1)
 
-    done: =>
-      @queue.shift()
- 
+    clear: =>
+      @queue = if @running then @queue[..0] else []
+
+    stop: =>
+      @running = false
+
     run: =>
-      return unless @queue.length
+      return if @running
+      @running = true
 
-      result = @queue[0].func.call()
+      @_process()
+
+    _process: =>
+      if !@queue.length
+        @stop()
+        return
+
+      item = @queue[0]
+      result = item.func.call()
       if $.isPlainObject(result) && $.isFunction(result.always)
         result.always =>
+          return unless item in @queue
           if (!(@opts.skipWhenNext && @queue.length > 1) ||
               @opts.stopOnError && result.state() is 'rejected') &&
              $.isFunction(dfd = @queue[0].deferred)
             dfd result
-          @done()
+          @_done()
       else
-        @done()
+        @_done()
             
-      $.when(result).then @run, if !@opts.stopOnError then @run
+      $.when(result).then @_next, if @opts.stopOnError then @stop else @_next
+
+    _next: =>
+      @_process() if @running
+
+    _done: =>
+      @queue.shift()
+      @stop() unless @queue.length
