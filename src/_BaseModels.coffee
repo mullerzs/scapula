@@ -228,11 +228,12 @@ define (require) ->
         children = {}
 
         for cname, props of @collections
-          return if props.setAttr ||
+          continue if props.setAttr ||
             (opts.attrs?.length && cname not in opts.attrs)
 
+          delete ret?[cname]
           coll = @[cname]
-          if coll
+          if coll && (!opts.skipEmpty || coll.length)
             ids = _.compact coll.pluck 'id'
             children[cname] = if cmode is 'id' || cmode is 'auto' && ids.length
               ids
