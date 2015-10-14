@@ -166,8 +166,8 @@ define (require) ->
 
       ret
 
-    duplicate: =>
-      attrs = @cloneAttrs()
+    duplicate: (opts) =>
+      attrs = @cloneAttrs opts
       new @constructor attrs
 
     cloneAttrs: (opts) =>
