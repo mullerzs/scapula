@@ -205,8 +205,7 @@ define (require) ->
                   coll.get(_attrs[opts.cid])?.set _attrs, opts
               else
                 coll[ if opts.update then 'set' else 'reset' ](attrs[cname],
-                  _.extend parse: true, props.resetOpts,
-                    _.pick opts, 'update', 'init')
+                  _.extend parse: true, props.resetOpts, _.omit opts, 'at')
             else
               @[cname] = null
 
