@@ -84,6 +84,7 @@ define (require) ->
       @deferData || @fetch(opts)
 
     addItem: (modelAttrs, opts) =>
+      return unless modelAttrs?
       opts ?= {}
       modelAttrs = [ modelAttrs ] unless _.isArray modelAttrs
 
@@ -93,13 +94,13 @@ define (require) ->
         models = []
 
         for model in modelAttrs
-          filt = @filter (item) ->
+          exModel = @find (item) ->
             for attr in attrs
               res = item.get(attr) is model[attr]
               break if res
             res
 
-          models.push model unless filt.length
+          models.push model unless exModel
       else
         models = modelAttrs
 
