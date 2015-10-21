@@ -1162,6 +1162,7 @@
         .fadeIn @opts.bgFadeTime, =>
           @$el.addClass @opts.modalShowClass
           @_showTimer = setTimeout =>
+            $('body').addClass @opts.bodyShowClass if @opts.bodyShowClass
             @$el.trigger 'showmodal'
             @$bg.on 'click', @triggerBgClick
           , @opts.transitionTime
@@ -1176,6 +1177,7 @@
         @$bg?.off 'click', @triggerBgClick
         @$bg?.remove()
         delete @$bg
+        $('body').removeClass @opts.bodyShowClass if @opts.bodyShowClass
         @$el.trigger 'hidemodal'
 
       if opts?.destroy || !@$bg
