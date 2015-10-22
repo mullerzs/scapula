@@ -350,8 +350,8 @@ define (require) ->
 
       for childId, child of @children
         if !children || childId in children
-          @stopListening child
           child.close opts
+          @stopListening child
           delete @children[childId]
 
     close: =>
