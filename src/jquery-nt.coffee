@@ -1258,6 +1258,7 @@
         @$tabs.last()[0]?.offsetLeft >= scrollLeft + @$cont.width()
 
     scroll: (dst) =>
+      return unless @$el.is ':visible'
       scrollPos = null
 
       if dst in [ 'left', 'right' ]
