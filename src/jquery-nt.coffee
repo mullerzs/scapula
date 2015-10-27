@@ -458,6 +458,43 @@
       parseInt($(@).css('border-right-width') ? 0)
     $(@)[0].scrollWidth > $(@)[0].offsetWidth - border_width
 
+
+  $.fn.ntTable2Array = ->
+    data = []
+    ranges = []
+    r = 0
+
+    @each ->
+      $(@).find('tr').each (i, tr) ->
+        row = []
+
+        $(tr).find('th, td').each (j, td) ->
+          $td = $(td)
+          cs = parseInt($td.attr 'colspan') || 1
+          rs = parseInt($td.attr 'rowspan') || 1
+          val = $td.text().trim()
+
+          ranges.forEach (range) ->
+            if range.s.r <= r <= range.e.r &&
+                range.s.c <= row.length <= range.e.c &&
+                range.e.c >= range.s.c
+              row.push null for [ 0 .. range.e.c - range.s.c ]
+
+          if rs > 1 || cs > 1
+            ranges.push
+              s : r: r, c: row.length
+              e : r: r + rs - 1, c: row.length + cs - 1
+
+          row.push if val != '' then val else null
+
+          row.push null for [ 0 .. cs - 2 ] if cs > 1
+
+        data.push row
+        r++
+
+    [ data, ranges ]
+
+
   # ---- Class based plugins --------------------------------------------------
 
   # ---- Plugin register helpers ----------------------------------------------
