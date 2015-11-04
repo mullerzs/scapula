@@ -99,7 +99,7 @@
 
   $.ntVideoUrlInfo = (url) ->
     url = '' unless typeof(url) is 'string'
-    if url.match /youtube\.com\/watch.*[?&]v=([^&]+)/
+    if url.match /(?:youtube\.com\/watch.*[?&]v=|youtu\.be\/)([^&]+)/
       id: RegExp.$1, type: 'youtube'
     else if url.match /vimeo\.com\/(.+)$/
       id: RegExp.$1, type: 'vimeo'
