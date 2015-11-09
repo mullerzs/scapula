@@ -24,7 +24,7 @@ define (require) ->
   mvconv.strToInt = (dir, val) ->
     if dir is 'ViewToModel'
       val = parseInt val
-      val = undefined if isNaN val
+      val = null if isNaN val
     else
       val = if val? then val.toString() else ''
 
