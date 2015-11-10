@@ -64,7 +64,7 @@ define (require) ->
       [attrs, opts] = @_setArgs key, val, opts
 
       if opts?.synctype in [ 'create', 'update' ] && !opts?.ids
-        refreshAttrs = _.clone opts.refreshAttrs || @refreshAttrs
+        refreshAttrs = _.clone(opts.refreshAttrs) || @refreshAttrs
 
         if refreshAttrs isnt true
           refreshAttrs = [] if !refreshAttrs? || refreshAttrs is false
