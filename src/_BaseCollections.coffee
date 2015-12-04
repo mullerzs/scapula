@@ -127,8 +127,9 @@ define (require) ->
 
         rank = utils.calcRank prev, next, signed: !!@orderAttr
         item.set 'rank', rank, _.pick opts, 'init'
-        item.set @orderAttr, @pluck 'id' if item.isNew() && @orderAttr
-        @sort item: item, from: from if at?
+        if at?
+          item.set @orderAttr, @pluck 'id' if item.isNew() && @orderAttr
+          @sort item: item, from: from
       else
         utils.throwError 'No model item specified for sortItem'
 
