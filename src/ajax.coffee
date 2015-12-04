@@ -94,6 +94,9 @@ define (require) ->
       opts.processData = false
       opts.data = JSON.stringify opts.data if _.isObject opts.data
 
+    if base = utils.getConfig 'base'
+      opts.url = base + opts.url.replace /^\//, ''
+
     $.ajax(opts).then( (data, textStatus, jqXHR) ->
       if data?.success
         data = data.content || {}
