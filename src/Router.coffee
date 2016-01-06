@@ -1,4 +1,5 @@
 define (require) ->
+  _ = require 'underscore'
   vent = require 'vent'
   utils = require 'utils'
 

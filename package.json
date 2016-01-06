@@ -1,0 +1,19 @@
+{
+  "name": "scapula",
+  "version": "1.0.0",
+  "description": "Backbone/AMD utility library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mullerzs/scapula.git"
+  },
+  "author": "Zsolt Muller",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mullerzs/scapula/issues"
+  },
+  "homepage": "https://github.com/mullerzs/scapula#readme"
+}
