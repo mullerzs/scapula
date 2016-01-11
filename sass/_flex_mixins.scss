@@ -1,8 +1,8 @@
 /* flexbox mixin supporting the new (Sep 2012) syntax + IE10 (Mar 2012) */
-/* requires compass 1.x */
+/* uses bourbon */
 
 @mixin nt-display-flex {
-  @include display-flex;
+  @include display(flex);
   display: -ms-flexbox;
   }
 
