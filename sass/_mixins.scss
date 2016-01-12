@@ -1,4 +1,5 @@
 @import "vars";
+@import "bourbon";
 
 @mixin respond-to($media) {
   @if $media == smaller-than-min-width {

@@ -1,5 +1,5 @@
 /* flexbox mixin supporting the new (Sep 2012) syntax + IE10 (Mar 2012) */
-/* uses bourbon */
+@import "bourbon";
 
 @mixin nt-display-flex {
   @include display(flex);
@@ -7,7 +7,7 @@
   }
 
 @mixin nt-display-inline-flex {
-  @include display-flex(inline-flex);
+  @include display(inline-flex);
   display: -ms-inline-flexbox;
   }
 
