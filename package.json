@@ -15,5 +15,15 @@
   "bugs": {
     "url": "https://github.com/mullerzs/scapula/issues"
   },
-  "homepage": "https://github.com/mullerzs/scapula#readme"
+  "homepage": "https://github.com/mullerzs/scapula#readme",
+  "dependencies": {
+    "backbone": "^1.2.3",
+    "backbone.modelbinder": "git+https://github.com/theironcook/Backbone.ModelBinder.git",
+    "base64-js": "^1.0.2",
+    "datejs": "0.0.2",
+    "handlebars": "^4.0.5",
+    "jquery": "^2.2.0",
+    "moment": "^2.11.1",
+    "underscore": "^1.8.3"
+  }
 }
