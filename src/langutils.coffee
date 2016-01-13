@@ -1,4 +1,5 @@
 define (require) ->
+  _ = require 'underscore'
   utils = require 'utils'
   Handlebars = require 'handlebars'
 
@@ -46,7 +47,7 @@ define (require) ->
     ivars = {}
 
     for varname, val of langobj
-      continue unless val.match /\#\{(cfg|lang)\./
+      continue if !_.isString(val) || val.match /\#\{(cfg|lang)\./
       obj = module.interpolate val, langobj,
         keepVar : true
         verbose : true
