@@ -1,4 +1,6 @@
 define (require) ->
+  _ = require 'underscore'
+
   mvconv = {}
 
   mvconv.html = (dir, val) ->
