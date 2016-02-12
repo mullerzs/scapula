@@ -1,4 +1,5 @@
 define (require) ->
+  _ = require 'underscore'
   mvconv = require 'mvconv'
 
   module = {}
@@ -48,6 +49,10 @@ define (require) ->
 
   module.strToInt = (selector, elAttribute) ->
     module._generic selector, elAttribute, mvconv.strToInt
+
+  module.roundTo = (selector, opts = {}) ->
+    module._generic selector, opts.elAttribute,
+      mvconv.roundTo _.omit opts, 'elAttribute'
 
   module.arrayify = (selector, elAttribute) ->
     module._generic selector, elAttribute, mvconv.arrayify

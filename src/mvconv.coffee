@@ -1,5 +1,6 @@
 define (require) ->
   _ = require 'underscore'
+  utils = require 'utils'
 
   mvconv = {}
 
@@ -31,6 +32,16 @@ define (require) ->
       val = if val? then val.toString() else ''
 
     val
+
+  mvconv.roundTo = (opts = {}) ->
+    mult = opts.mult ? 1
+    (dir, val) ->
+      if dir is 'ModelToView'
+        utils.roundTo val / mult, opts.prec
+      else
+        val = mvconv.float dir, val
+        val *= mult if _.isFinite val
+        val
 
   mvconv.flag = (dir, val) ->
     if dir is 'ViewToModel'
