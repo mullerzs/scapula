@@ -87,6 +87,12 @@ define (require) ->
 
       super attrs, opts
 
+    unset: (attr, opts) =>
+      if _.isArray attr
+        super _attr, opts for _attr in attr
+      else
+        super
+
     urlParams: =>
       utils.getProp(@, 'urlRootParams') ||
         utils.getProp(@collection, 'urlParams')
