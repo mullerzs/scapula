@@ -14,6 +14,7 @@ define (require) ->
     return ws._sockets[name].conn if !opts.retry && ws._sockets[name]
 
     if !url.match /^wss?\:\/\//
+      url = utils.getHost() + url if url.match /^\//
       url = (if utils.getProtocol() is 'https:' then 'wss' else 'ws') +
         "://#{url}"
 
@@ -47,7 +48,9 @@ define (require) ->
       socket.conn.onmessage = (e) ->
         # console.log "WS[#{name}] INCOMING MSG: " + e.data
         content = {}
-        try content = JSON.parse(e.data).content
+        try
+          content = JSON.parse e.data
+          content = content[content_key] if opts.content_key
 
         if content[ws.PING]
           socket.conn.send JSON.stringify _.pick content, ws.PING
