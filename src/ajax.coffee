@@ -49,11 +49,17 @@ define (require) ->
 
     utils.throwError err, 'ajax' if err
 
+    params = {}
+
     if auth = utils.getConfig 'auth'
       if auth_header = utils.getConfig 'auth_header'
         (opts.headers ?= {})[auth_header] = auth
       else
-        opts.url += (if opts.url.match /\?/ then '&' else '?') + 'auth=' + auth
+        params.auth = auth
+
+    params._client_id = client_id if client_id = utils.getConfig 'client_id'
+
+    opts.url = utils.addUrlParams opts.url, params
 
     opts
 

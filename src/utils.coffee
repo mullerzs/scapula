@@ -393,6 +393,16 @@ define (require) ->
   utils.getOrigin = ->
     utils.getProtocol() + '//' + utils.getHost()
 
+  utils.addUrlParams = (url, params, opts) ->
+    if url? && !_.isEmpty params
+      url += (if url.match /\?/ then '&' else '?') +
+        _.map(_.pairs(params), (p) ->
+          p[1] = encodeURIComponent p[1] if opts?.encode
+          p.join '='
+        ).join '&'
+
+    url
+
   utils.getUrlParams = ->
     _.object _.compact _.map location.search[1..].split('&'), (item) ->
       if item then item.split '='
@@ -417,10 +427,7 @@ define (require) ->
     if _.isEmpty opts
       lnk
     else
-      params = []
-      for param of opts
-        params.push param + '=' + encodeURIComponent(opts[param])
-      lnk + '?' + params.join('&')
+      utils.addUrlParams lnk, opts, encode: true
 
   utils.getFrac = (str, opts) ->
     frac = str?.toString().match(/\.\d+$/)?[0]
