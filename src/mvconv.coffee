@@ -37,11 +37,18 @@ define (require) ->
     mult = opts.mult ? 1
     (dir, val) ->
       if dir is 'ModelToView'
-        utils.roundTo val / mult, opts.prec
+        if _.isFinite(_val = parseFloat val)
+          val = utils.roundTo _val / mult, opts.prec
       else
         val = mvconv.float dir, val
-        val *= mult if _.isFinite val
-        val
+        if _.isFinite val
+          if opts.min? && val < opts.min
+            val = opts.min
+          else if opts.max? && val > opts.max
+            val = opts.max
+          val *= mult
+
+      val
 
   mvconv.flag = (dir, val) ->
     if dir is 'ViewToModel'
