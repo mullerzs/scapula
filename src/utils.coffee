@@ -782,6 +782,10 @@ define (require) ->
 
     size
 
+  utils.precToStep = (prec = 0) ->
+    if _.isFinite(prec = parseInt prec)
+      1 / (10 ** prec)
+
   utils.roundTo = (val, prec) ->
     val = parseFloat val
     if _.isFinite val
