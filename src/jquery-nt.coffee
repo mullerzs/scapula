@@ -1450,6 +1450,52 @@
       @stop()
 
 
+  # ---- PointerSpy -----------------------------------------------------------
+
+  class plugins.PointerSpy extends $._ntPluginBaseClass
+    defaults:
+      directionX: 'ltr' # ltr / rtl
+      directionY: 'ttb' # ttb / btt
+
+    init: ->
+      @$el.on 'mousedown touchstart', @mousedown
+
+    eventPos: (e) =>
+      oe = e.originalEvent
+
+      x : oe.pageX ? oe.changedTouches[0].pageX
+      y : oe.pageY ? oe.changedTouches[0].pageY
+
+    mousedown: (e) =>
+      @params = @eventPos e
+
+      $(document)
+        .on 'mousemove touchmove', @mousemove
+        .on 'mouseup touchend', @mouseup
+
+    mousemove: (e) =>
+      if @params && @opts.onMove
+        pos = @eventPos e
+
+        params =
+          dx  : pos.x - @params.x
+          dy  : pos.y - @params.y
+          $el : @$el
+
+        params.dx *= -1 if @opts.directionX is 'rtl'
+        params.dy *= -1 if @opts.directionX is 'btt'
+
+        @opts.onMove params
+
+    mouseup: =>
+      $(document).off 'mousemove touchmove', @mousemove
+      $(document).off 'mouseup touchend', @mousemove
+      delete @params
+
+    destroy: =>
+      @mouseup()
+      @$el.off 'mousedown touchdown', @mousedown
+
   # ---- Register class based plugins -----------------------------------------
 
   $._ntRegisterPlugins plugins
