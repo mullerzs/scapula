@@ -1473,6 +1473,8 @@
         .on 'mousemove touchmove', @mousemove
         .on 'mouseup touchend', @mouseup
 
+      @opts.onStart _.extend $el: @$el, @params if @opts.onStart
+
     mousemove: (e) =>
       if @params && @opts.onMove
         pos = @eventPos e
@@ -1490,6 +1492,7 @@
     mouseup: =>
       $(document).off 'mousemove touchmove', @mousemove
       $(document).off 'mouseup touchend', @mousemove
+      @opts.onEnd $el: @$el if @params && @opts.onEnd
       delete @params
 
     destroy: =>
