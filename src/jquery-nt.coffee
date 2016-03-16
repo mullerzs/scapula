@@ -1454,8 +1454,9 @@
 
   class plugins.PointerSpy extends $._ntPluginBaseClass
     defaults:
-      directionX: 'ltr' # ltr / rtl
-      directionY: 'ttb' # ttb / btt
+      directionX : 'ltr' # ltr / rtl
+      directionY : 'ttb' # ttb / btt
+      moveClass  : 'nt-dragging'
 
     init: ->
       @$el.on 'mousedown touchstart', @mousedown
@@ -1472,6 +1473,7 @@
       $(document)
         .on 'mousemove touchmove', @mousemove
         .on 'mouseup touchend', @mouseup
+        .find('html').addClass @opts.moveClass
 
       @opts.onStart _.extend $el: @$el, @params if @opts.onStart
 
@@ -1490,8 +1492,10 @@
         @opts.onMove params
 
     mouseup: =>
-      $(document).off 'mousemove touchmove', @mousemove
-      $(document).off 'mouseup touchend', @mousemove
+      $(document)
+        .off 'mousemove touchmove', @mousemove
+        .off 'mouseup touchend', @mousemove
+        .find('html').removeClass @opts.moveClass
       @opts.onEnd $el: @$el if @params && @opts.onEnd
       delete @params
 
