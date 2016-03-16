@@ -1483,7 +1483,7 @@
           $el : @$el
 
         params.dx *= -1 if @opts.directionX is 'rtl'
-        params.dy *= -1 if @opts.directionX is 'btt'
+        params.dy *= -1 if @opts.directionY is 'btt'
 
         @opts.onMove params
 
