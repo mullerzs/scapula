@@ -329,10 +329,17 @@ define (require) ->
       view.parent = @
       @children[key] = view
 
+      @listenTo view, 'close', => @deleteChild key
+
       view.render() if opts?.render
       view.afterDomAdd() if opts?.domadd && _.isFunction view.afterDomAdd
 
       view
+
+    deleteChild: (name) =>
+      if child = @getChild name
+        @stopListening child
+        delete @children[name]
 
     storeChildren: (obj, opts) =>
       @storeChild view, name, opts for name, view of obj
@@ -351,8 +358,7 @@ define (require) ->
       for childId, child of @children
         if !children || childId in children
           child.close opts
-          @stopListening child
-          delete @children[childId]
+          @deleteChild childId
 
     close: =>
       @closed = true

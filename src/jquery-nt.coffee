@@ -1470,8 +1470,6 @@
     mousedown: (e) =>
       @params = @eventPos e
 
-      e.preventDefault()
-
       $(document)
         .on 'mousemove touchmove', @mousemove
         .on 'mouseup touchend', @mouseup
@@ -1482,6 +1480,8 @@
     mousemove: (e) =>
       if @params && @opts.onMove
         pos = @eventPos e
+
+        e.preventDefault()
 
         params =
           dx  : pos.x - @params.x
