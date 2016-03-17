@@ -1470,6 +1470,8 @@
     mousedown: (e) =>
       @params = @eventPos e
 
+      e.preventDefault()
+
       $(document)
         .on 'mousemove touchmove', @mousemove
         .on 'mouseup touchend', @mouseup
