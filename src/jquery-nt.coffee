@@ -1531,7 +1531,7 @@
       $(document)
         .off 'mouseup touchend', @end
         .find('html').removeClass @opts.moveClass
-      @opts.onEnd $el: @$el if @dragged && @opts.onEnd
+      @opts.onEnd $el: @$el, dragged: @dragged if @opts.onEnd
       delete @[prop] for prop in [ 'dragged', 'params' ]
 
     destroy: =>
