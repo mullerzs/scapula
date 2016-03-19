@@ -1452,14 +1452,26 @@
 
   # ---- PointerSpy -----------------------------------------------------------
 
-  class plugins.PointerSpy extends $._ntPluginBaseClass
+  class plugins.DragSpy extends $._ntPluginBaseClass
     defaults:
-      directionX : 'ltr' # ltr / rtl
-      directionY : 'ttb' # ttb / btt
-      moveClass  : 'nt-dragging'
+      directionX     : 'ltr' # ltr / rtl
+      directionY     : 'ttb' # ttb / btt
+      moveClass      : 'nt-dragging'
+      distance       : 10
+      longPressDelay : 500
 
     init: ->
-      @$el.on 'mousedown touchstart', @mousedown
+      # TODO: detect touch capability?
+      @touch = $.ntIsMobile()
+
+      if @touch
+        @$el
+          .on 'touchstart', @touchstart
+          .on 'touchend', @touchend
+      else
+        @$el.on 'mousedown', @start
+
+      $(document).on 'mousemove touchmove', @move
 
     eventPos: (e) =>
       oe = e.originalEvent
@@ -1467,43 +1479,68 @@
       x : oe.pageX ? oe.changedTouches[0].pageX
       y : oe.pageY ? oe.changedTouches[0].pageY
 
-    mousedown: (e) =>
+    touchstart: (e) =>
+      @_touchTimer = setTimeout =>
+        @start e
+      , @opts.longPressDelay
+
+    touchend: =>
+      clearTimeout @_touchTimer
+      delete @_touchTimer
+
+    start: (e) =>
       @params = @eventPos e
 
       $(document)
-        .on 'mousemove touchmove', @mousemove
-        .on 'mouseup touchend', @mouseup
+        .on 'mouseup touchend', @end
         .find('html').addClass @opts.moveClass
 
-      @opts.onStart _.extend $el: @$el, @params if @opts.onStart
+      @opts.onStart $.extend $el: @$el, @params if @opts.onStart
 
-    mousemove: (e) =>
-      if @params && @opts.onMove
+    move: (e) =>
+      if !@params
+        @touchend()
+      else if @opts.onMove
         pos = @eventPos e
-
-        e.preventDefault()
 
         params =
           dx  : pos.x - @params.x
           dy  : pos.y - @params.y
           $el : @$el
 
-        params.dx *= -1 if @opts.directionX is 'rtl'
-        params.dy *= -1 if @opts.directionY is 'btt'
+        if @touch ||
+            (!@dragged &&
+             (Math.abs(params.dx) >= @opts.distance ||
+              Math.abs(params.dy) >= @opts.distance))
+          @dragged = true
 
-        @opts.onMove params
+          if !@touch
+            @params = pos
+            params.dx = 0
+            params.dy = 0
 
-    mouseup: =>
+        if @dragged
+          e.preventDefault()
+
+          params.dx *= -1 if @opts.directionX is 'rtl'
+          params.dy *= -1 if @opts.directionY is 'btt'
+
+          @opts.onMove params
+
+    end: =>
       $(document)
-        .off 'mousemove touchmove', @mousemove
-        .off 'mouseup touchend', @mousemove
+        .off 'mouseup touchend', @end
         .find('html').removeClass @opts.moveClass
-      @opts.onEnd $el: @$el if @params && @opts.onEnd
-      delete @params
+      @opts.onEnd $el: @$el if @dragged && @opts.onEnd
+      delete @[prop] for prop in [ 'dragged', 'params' ]
 
     destroy: =>
-      @mouseup()
-      @$el.off 'mousedown touchdown', @mousedown
+      @touchend()
+      @end()
+      @$el
+        .off 'mousedown', @start
+        .off ev, @[ev] for ev in [ 'touchstart', 'touchend' ]
+      delete @touch
 
   # ---- Register class based plugins -----------------------------------------
 
