@@ -1534,6 +1534,12 @@
       @opts.onEnd $el: @$el, dragged: @dragged if @opts.onEnd
       delete @[prop] for prop in [ 'dragged', 'params' ]
 
+    adjustPos: (params) =>
+      if @params
+        for c in [ 'x', 'y' ]
+          @params[c] = p if (p = params[c])?
+          @params[c] += dp if (dp = params["d#{c}"])?
+
     destroy: =>
       @touchend()
       @end()
