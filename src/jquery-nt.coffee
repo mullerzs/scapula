@@ -1450,7 +1450,7 @@
       @stop()
 
 
-  # ---- PointerSpy -----------------------------------------------------------
+  # ---- DragSpy --------------------------------------------------------------
 
   class plugins.DragSpy extends $._ntPluginBaseClass
     defaults:
