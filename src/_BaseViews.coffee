@@ -313,8 +313,8 @@ define (require) ->
       @closeChildren()
       super
 
-    createChild: (ViewClass, opts, childName) =>
-      @storeChild (new ViewClass opts), childName, render: true
+    createChild: (ViewClass, opts, childName, copts) =>
+      @storeChild (new ViewClass opts), childName, _.extend render: true, copts
 
     getChild: (name) =>
       @children?[name]

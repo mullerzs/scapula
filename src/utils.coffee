@@ -15,7 +15,8 @@ define (require) ->
     REG_HOST   : '[a-z\\d]([a-z\\d\\-]{0,61}[a-z\\d])?' +
                  '(\\.[a-z\\d]([a-z\\d\\-]{0,61}[a-z\\d])?)*'
     REG_DT_DB  : '\\d{4}(-\\d{2}){2}\\s+\\d{2}(:\\d{2}){2}(\\.\\d+)?'
-    REG_DT_ISO : '\\d{4}(-\\d{2}){2}T\\d{2}(:\\d{2}){2}(\\.\\d{1,3})?'
+    REG_DT_ISO : '\\d{4}(-\\d{2}){2}T\\d{2}(:\\d{2}){2}(\\.\\d{1,3})?' +
+                 '(Z|[+-]\\d{2}:\\d{2})?'
     FMT_DT_DB  : 'YYYY-MM-DD HH:mm:ss'
     FMT_DT_ISO : 'YYYY-MM-DDTHH:mm:ss'
 
