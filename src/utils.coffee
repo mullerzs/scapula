@@ -811,6 +811,35 @@ define (require) ->
       sum += Math.pow(arr[l] - mean, 2)
     Math.sqrt(sum / (arr.length || 1))
 
+  utils.interpolate = (arr, opts = {}) ->
+    return arr unless opts.step > 1
+
+    inc = 1 / opts.step
+    ret = []
+    idx = 0
+
+    _addValue = (val) -> ret.push utils.roundTo val
+
+    while idx < arr.length
+      if idx == arr.length - 1
+        _addValue arr[idx]
+      else
+        mu = 0
+
+        while mu < 1
+          if opts.type is 'cosine'
+            _mu = (1 - Math.cos(mu * Math.PI)) / 2
+          else
+            _mu = mu
+
+          _addValue arr[idx] * (1 - _mu) + arr[idx + 1] * _mu
+
+          mu += inc
+
+      idx++
+
+    ret
+
   utils.reloadPage = (opts) ->
     href = if _.isObject opts then opts.href else opts
     window.location.href = href ? window.location.href
