@@ -439,14 +439,19 @@
       $cont = $(@).parent()
 
     cont_sctop = $cont.scrollTop()
-    cont_h = $cont.height()
+    cont_h = opts.containerHeight ? $cont.height()
     h = $(@).outerHeight()
-    shift = opts.shift || 0
+    offtop -= opts.shift if opts.shift
 
-    dst = if !opts.top && offtop - cont_sctop + h > cont_h
-      offtop + h - cont_h + shift
-    else if opts.top || offtop < cont_sctop
-      offtop - shift
+    dst = if !opts.top && cont_h >= h
+      # top cover
+      if offtop - cont_sctop < 0
+        offtop
+      # bottom cover
+      else if offtop - cont_sctop + h > cont_h
+        offtop - cont_h + h
+    else if opts.top
+      offtop
 
     $cont.animate scrollTop: dst, opts.speed || 200 if dst?
 
