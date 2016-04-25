@@ -442,16 +442,17 @@
     cont_h = opts.containerHeight ? $cont.height()
     h = $(@).outerHeight()
     offtop -= opts.shift if opts.shift
+    padding = opts.padding ? 0
 
     dst = if !opts.top && cont_h >= h
       # top cover
       if offtop - cont_sctop < 0
-        offtop
+        offtop - padding
       # bottom cover
       else if offtop - cont_sctop + h > cont_h
-        offtop - cont_h + h
+        offtop - cont_h + h + padding
     else if opts.top
-      offtop
+      offtop - padding
 
     $cont.animate scrollTop: dst, opts.speed || 200 if dst?
 
