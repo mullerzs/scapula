@@ -659,7 +659,7 @@
 
     clickDoc: (e) =>
       $tgt = $(e.target)
-      if !$tgt.closest('.' + @opts.contClass)[0] &&
+      if !$tgt.closest(@$el.parent())[0] &&
           !$tgt.closest(@opts.btn)[0]
         @toggleOptions false
 
