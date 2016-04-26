@@ -709,6 +709,7 @@
       @$options['slide' + func](100, =>
         @$options.find('li').removeClass(@opts.hoverClass)
           .filter('.' + @opts.selClass).addClass @opts.hoverClass
+        @$el.trigger 'toggle', @$options
       )
 
     hoverOption: (e) =>
