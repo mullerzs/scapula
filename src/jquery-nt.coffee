@@ -438,7 +438,12 @@
     else
       $cont = $(@).parent()
 
-    cont_sctop = $cont.scrollTop()
+    if $.ntBrowser('firefox') && $cont[0] is $('body')[0]
+      $scrollcont = $('html')
+    else
+      $scrollcont = $cont
+
+    cont_sctop = $scrollcont.scrollTop()
     cont_h = opts.containerHeight ? $cont.height()
     h = $(@).outerHeight()
     offtop -= opts.shift if opts.shift
@@ -454,7 +459,7 @@
     else if opts.top
       offtop - padding
 
-    $cont.animate scrollTop: dst, opts.speed || 200 if dst?
+    $scrollcont.animate scrollTop: dst, opts.speed || 200 if dst?
 
     $(@)
 
