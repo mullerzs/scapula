@@ -655,7 +655,9 @@
 
       # event handlers
       @opts.btn?.click @clickBox
-      @$box.click(@clickBox).keydown @keydownBox
+      if !@opts.btn || !@$box.closest(@opts.btn)[0]
+        @$box.click @clickBox
+      @$box.keydown @keydownBox
       @$options.on 'mouseover', 'li', @hoverOption
       @$options.on 'click', 'li', @clickOption
       $(document).on 'click', @clickDoc
@@ -669,6 +671,7 @@
         @toggleOptions false
 
     clickOption: (e) =>
+      e.stopPropagation()
       @setValue $(e.target)
       @$box.focus()
 
