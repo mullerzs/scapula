@@ -42,7 +42,7 @@ define (require) ->
       else
         val = mvconv.float dir, val
         if _.isFinite val
-          if opts.min? && val < opts.min
+          if opts.min? && val < opts.min && (!opts.zero || val != 0)
             val = opts.min
           else if opts.max? && val > opts.max
             val = opts.max
