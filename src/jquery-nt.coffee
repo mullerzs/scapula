@@ -117,7 +117,7 @@
   $.ntForceBlur = ->
     type = if $.ntIsMobile() then 'month' else 'text'
     $('<input type="' + type + '"
-        style="font-size: 16px; position: fixed; left: -10000px">')
+        style="font-size: 16px; position: fixed; top: 0; left: -10000px">')
       .appendTo('body').focus().remove()
 
 
