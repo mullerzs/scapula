@@ -1138,9 +1138,12 @@
         @$listEl.css left: ww - lw if ww < left + lw
 
         lh = @$listEl.outerHeight()
-        if top + lh > $(window).height() && (uptop = top - lh - ih - 2) > 0
+        if top + lh > $(window).height() + $(document).scrollTop() &&
+            (uptop = top - lh - ih - 2) > 0
           @$listEl.find(".#{@opts.itemSearchClass}").appendTo @$listEl
           @$listEl.css top: uptop
+
+      @$el.trigger 'suggest', @$listEl
 
     hideItems: =>
       @$listEl?.hide()
