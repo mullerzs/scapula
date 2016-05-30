@@ -1158,6 +1158,7 @@
       # key codes: ENTER: 13, ESC: 27, UP: 38, DOWN: 40
       if e.which == 13
         @hideItems()
+        delete @select
       else
         e.preventDefault()
 
