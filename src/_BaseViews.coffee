@@ -598,7 +598,7 @@ define (require) ->
       if @emptyViewVisible
         @emptyView.close()
         delete @emptyViewVisible
-        @renderTpl() if @template && opts?.restore
+        @renderTpl() if @template && !@emptyViewCont && opts?.restore
         @trigger 'hideempty'
 
     close: =>
