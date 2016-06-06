@@ -460,7 +460,11 @@
     else if opts.top
       offtop - padding
 
-    $scrollcont.animate scrollTop: dst, opts.speed || 200 if dst?
+    if dst?
+      scrollOpts = duration: opts.speed || 200
+      if $.isFunction opts.complete
+        scrollOpts.complete = opts.complete
+      $scrollcont.animate scrollTop: dst, scrollOpts
 
     $(@)
 
