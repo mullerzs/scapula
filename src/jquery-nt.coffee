@@ -421,10 +421,12 @@
       r[1].replaceWith r[0] for r in rpl
 
 
-  # TODO: handle when container is smaller than item
-  $.fn.ntScrollToMe = (opts) ->
-    opts ?= {}
+  $.ntMainScrollCont = ->
+    if $.ntBrowser('firefox') then $('html') else $('body')
 
+
+  # TODO: handle when container is smaller than item
+  $.fn.ntScrollToMe = (opts = {}) ->
     offtop = $(@)[0].offsetTop
 
     if opts.container
@@ -439,10 +441,10 @@
     else
       $cont = $(@).parent()
 
-    if $.ntBrowser('firefox') && $cont[0] is $('body')[0]
-      $scrollcont = $('html')
+    $scrollcont = if $cont[0] is $('body')[0]
+      $.ntMainScrollCont()
     else
-      $scrollcont = $cont
+      $cont
 
     cont_sctop = $scrollcont.scrollTop()
     cont_h = opts.containerHeight ? $cont.height()
@@ -461,10 +463,8 @@
       offtop - padding
 
     if dst?
-      scrollOpts = duration: opts.speed || 200
-      if $.isFunction opts.complete
-        scrollOpts.complete = opts.complete
-      $scrollcont.animate scrollTop: dst, scrollOpts
+      $scrollcont.animate scrollTop: dst,
+        $.extend duration: 200, opts.animationOpts
 
     $(@)
 
