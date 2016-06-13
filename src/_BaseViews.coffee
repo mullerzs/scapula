@@ -357,6 +357,8 @@ define (require) ->
 
       for childId, child of @children
         if !children || childId in children
+          if opts?.noremove && child.$el && !child.$el.closest(@$el)[0]
+            opts = _.extend {}, opts, noremove: false
           child.close opts
           @deleteChild childId
 
