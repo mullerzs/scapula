@@ -626,8 +626,8 @@ define (require) ->
   utils.isDateWithinAYear = (m) ->
     input = moment(m)
     now = utils.getDateTime()
-    input.isAfter(now.clone().subtract('months', 6)) &&
-      input.isBefore(now.add('months', 6))
+    input.isAfter(now.clone().subtract 6, 'months') &&
+      input.isBefore(now.add 6, 'months')
 
   utils.isValidDate = (m) ->
     m? && m.toDate().toString() != 'Invalid Date' && 2000 < m.year() < 2099
@@ -707,8 +707,8 @@ define (require) ->
     m = utils.parseDate date
     addValues = milliseconds: addValues unless _.isObject addValues
 
-    for prop of addValues
-      m.add prop, addValues[prop]
+    for prop, val of addValues
+      m.add val, prop
 
     if _.isEmpty fmtopts
       m
