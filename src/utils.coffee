@@ -749,7 +749,7 @@ define (require) ->
   utils.getDuration = (val, unit) ->
     moment.duration(val, unit)._data
 
-  utils.formatHMS = (secs) ->
+  utils.formatHMS = (secs, opts) ->
     secs ?= 0
     _m = 60
     _h = 60 * _m
@@ -760,11 +760,21 @@ define (require) ->
     m = parseInt secs / _m
     s = parseInt secs % _m
 
-    m = '0' + m if m < 10
-    s = '0' + s if s < 10
+    if opts?.units
+      units = _.defaults _.extend({}, opts.units), h: 'h', m: 'm', s: 's'
 
-    ret = m + ':' + s
-    ret = h + ':' + ret if h
+      ret = []
+      ret.push h + units.h if h
+      ret.push m + units.m if m
+      ret.push s + units.s if s || !h && !m
+      ret = ret.join ' '
+    else
+      m = '0' + m if m < 10
+      s = '0' + s if s < 10
+
+      ret = m + ':' + s
+      ret = h + ':' + ret if h
+
     ret
 
   utils.formatFileSize = (size, opts) ->
