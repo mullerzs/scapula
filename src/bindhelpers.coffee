@@ -35,6 +35,11 @@ define (require) ->
       if dir is 'ModelToView'
         if val then cname else ''
 
+  module.invBoolClass = (selector, cname) ->
+    module.class selector, (dir, val) ->
+      if dir is 'ModelToView'
+        if !val then cname else ''
+
   module.html = (selector) ->
     module._generic selector, 'html', mvconv.html
 
