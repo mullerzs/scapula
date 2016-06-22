@@ -494,7 +494,7 @@ define (require) ->
 
       if !opts?.reset || !@rendered?
         @$el.empty()
-        @renderTpl() if @template && (items.length || @emptyViewCont)
+        @renderTpl() if @template
         @toggleModelDomBindings true if @model && @modelBindOnRender
       else
         @$itemCont.empty()
