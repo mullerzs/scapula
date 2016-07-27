@@ -803,6 +803,20 @@ define (require) ->
       prec = if _.isFinite(prec) then prec else 0
       parseFloat val.toFixed prec
 
+  utils.limitNum = (val, min, max) ->
+    if _.isFinite val = parseFloat val
+      limits = if _.isArray min
+        min: min[0], max: min[1]
+      else if _.isObject min
+        min
+      else
+        min: min, max: max
+
+      for op, limit of { min: 'max', max: 'min' }
+        val = _[op] [ v, val ] if _.isFinite v = parseFloat limits[limit]
+
+    val
+
   utils.mean = (arr) ->
     arrLen = arr?.length
     if arrLen > 1
