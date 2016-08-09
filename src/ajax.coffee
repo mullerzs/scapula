@@ -116,7 +116,13 @@ define (require) ->
       ret || $.Deferred().resolve data, textStatus, jqXHR
 
     , (jqXHR, textStatus, errorThrown) ->
-      error = ajax._processError 'error_req', opts
+      code = if jqXHR.status >= 500
+        'internal'
+      else if jqXHR.status == 404
+        'notfound'
+      else
+        'req'
+      error = ajax._processError "error_#{code}", opts
       dfd.reject error if dfd
       $.Deferred().reject error
     ).always ->
