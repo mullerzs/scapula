@@ -52,6 +52,7 @@ define (require) ->
     params = {}
 
     if auth = utils.getConfig 'auth'
+      auth = auth() if _.isFunction auth
       if auth_header = utils.getConfig 'auth_header'
         (opts.headers ?= {})[auth_header] = auth
       else

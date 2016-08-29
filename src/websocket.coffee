@@ -8,9 +8,8 @@ define (require) ->
     MAX_RETRY_MS : 30000
     PING         : 'ping'
 
-  ws.connect = (name, url, opts) ->
+  ws.connect = (name, url, opts = {}) ->
     return unless window.WebSocket && name && url
-    opts ?= {}
     return ws._sockets[name].conn if !opts.retry && ws._sockets[name]
 
     if !url.match /^wss?\:\/\//
@@ -21,7 +20,11 @@ define (require) ->
     # console.log "WS[#{name}] CONNECT: #{url}"
 
     socket = ws._sockets[name] ?= {}
-    socket.conn = new WebSocket url, utils.getConfig 'auth'
+    subprot = if opts.subprot?
+      if opts.subprot is false then null else opts.subprot
+    else if !_.isFunction(auth = utils.getConfig 'auth')
+      auth
+    socket.conn = new WebSocket url, subprot
     socket.attempts = 1 unless opts.retry
 
     socket.conn.onopen = ->
