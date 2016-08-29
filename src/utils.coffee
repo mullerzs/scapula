@@ -252,7 +252,7 @@ define (require) ->
       if !opts?.ref
         if _.isArray ret
           ret = _.extend [], ret
-        else if _.isObject ret
+        else if _.isObject(ret) && !_.isFunction ret
           ret = _.extend {}, ret
 
     ret
