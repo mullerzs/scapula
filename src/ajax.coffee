@@ -121,6 +121,8 @@ define (require) ->
         'internal'
       else if jqXHR.status == 404
         'notfound'
+      else if jqXHR.status == 401
+        'unauth'
       else
         'req'
       error = ajax._processError "error_#{code}", opts
