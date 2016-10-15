@@ -30,6 +30,7 @@ define (require) ->
     socket.conn.onopen = ->
       # console.log "WS[#{name}] IS OPEN"
       socket.attempts = 1
+      vent.trigger "websocket:#{name}:open", socket.conn, opts
 
     socket.conn.onclose = (e) ->
       # console.log "WS[#{name}] CLOSED (code: #{e.code}, wasClean: #{e.wasClean})"
@@ -45,6 +46,8 @@ define (require) ->
           socket.attempts++
           ws.connect name, url, _.extend {}, opts, retry: true
         , to
+
+      vent.trigger "websocket:#{name}:close", e
 
     if opts.msgevent
       # console.log "WS[#{name}] SET MESSAGING TO '#{opts.msgevent}'"
