@@ -5,17 +5,17 @@ define (require) ->
 
   module = {}
 
-  module.interpolate = (str, langobj, opts) ->
+  module.interpolate = (str, langobj = {}, opts = {}) ->
     return str unless _.isString str
-    opts ?= {}
-    langobj ?= {}
+    skip = opts.skip ? []
+    skip = [ skip ] unless _.isArray skip
     ivars = []
 
     res = str.replace /#\{(.*?)\}/g, (whole, expr) ->
       if expr.match /^lang\./
-        ret = langobj[expr.replace /^lang\./, '']
+        ret = langobj[expr.replace /^lang\./, ''] unless 'lang' in skip
       else if expr.match /^cfg\./
-        ret = utils.getConfig(expr.replace /^cfg\./, '')
+        ret = utils.getConfig(expr.replace /^cfg\./, '') unless 'cfg' in skip
       else
         plexpr = expr.match /^(\S+)\s+(.+)$/
         if plexpr
@@ -47,10 +47,11 @@ define (require) ->
     ivars = {}
 
     for varname, val of langobj
-      continue if !_.isString(val) || val.match /\#\{(cfg|lang)\./
+      continue unless _.isString val
       obj = module.interpolate val, langobj,
         keepVar : true
         verbose : true
+        skip    : 'cfg'
       preproc[varname] = obj.res
       if obj.ivars
         for v in obj.ivars
@@ -80,7 +81,7 @@ define (require) ->
       key = k
 
     if str
-      if opts.vars
+      if opts.vars || str.match /#\{cfg\..+?\}/
         str = module.interpolate str, langobj,
           vars: opts.vars, keepVar: !!opts.htmlVars
 
