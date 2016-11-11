@@ -6,7 +6,7 @@ define (require) ->
 
   mvconv.html = (dir, val) ->
     if dir is 'ModelToView'
-      $.ntEncodeHtml val
+      $.ntEncodeHtml val ? ''
     else
       $.ntDecodeHtml val
 
