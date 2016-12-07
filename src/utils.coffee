@@ -307,10 +307,12 @@ define (require) ->
   utils.isNewerVersion = (v1, v2) ->
     v1 isnt v2 && utils.maxVersion(v1, v2) is v2
 
-  utils._sort = (a, b, opts) ->
-    ret = if b? && (!a? || a < b)
+  utils._sort = (a, b, opts = {}) ->
+    ret = if b? && (!a? && !opts.nullToEnd || a? && a < b) ||
+        a? && !b? && opts.nullToEnd
       -1
-    else if a? && (!b? || a > b)
+    else if a? && (!b? && !opts.nullToEnd || b? && a > b) ||
+        b? && !a? && opts.nullToEnd
       1
 
     ret *= -1 if ret && opts?.desc
