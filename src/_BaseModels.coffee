@@ -1,7 +1,8 @@
 define (require) ->
   _ = require 'underscore'
   Backbone = require 'backbone'
-  utils = require 'utils'
+  utils = require 'scapula-utils'
+  config_utils = require './config-utils'
 
   Base = {}
 
@@ -15,7 +16,7 @@ define (require) ->
       @noSync = !!opts?.noSync
 
       @autoSave = opts.autoSave if opts?.autoSave?
-      autoSaveTimeout = utils.getConfig('autoSaveTimeout') || 50
+      autoSaveTimeout = config_utils.getConfig('autoSaveTimeout') || 50
 
       @on 'sync', => delete @_unSynced
 
@@ -75,9 +76,7 @@ define (require) ->
       if !opts?.unset
         for attr, value of attrs
           continue unless value?
-          if @_dateAttrs && attr in @_dateAttrs
-            attrs[attr] = utils.dbDateToIso value
-          else if @_integerAttrs && attr in @_integerAttrs
+          if @_integerAttrs && attr in @_integerAttrs
             attrs[attr] = parseInt value
           else if @_floatAttrs && attr in @_floatAttrs
             attrs[attr] = parseFloat value
@@ -162,9 +161,6 @@ define (require) ->
 
       if opts?.attrs?.length
         ret = _.pick ret, opts.attrs
-
-      if @_dateAttrs
-        ret[attr] = utils.isoToDbDate ret[attr] for attr in @_dateAttrs
 
       if opts?.cid
         cidname = if _.isBoolean opts.cid then 'cid' else opts.cid

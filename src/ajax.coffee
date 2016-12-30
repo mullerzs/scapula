@@ -1,8 +1,8 @@
 define (require) ->
   _ = require 'underscore'
-  Backbone = require 'backbone'
-  utils = require 'utils'
-  vent = require 'vent'
+  utils = require 'scapula-utils'
+  config_utils = require './config-utils'
+  vent = require './vent'
 
   ajax =
     progCnt  : 0
@@ -47,18 +47,19 @@ define (require) ->
     else if opts.type in [ 'POST', 'PUT' ] && !opts.data
       err = 'No data for ' + opts.type + ' request!'
 
-    utils.throwError err, 'ajax' if err
+    throw new Error err, 'ajax' if err
 
     params = {}
 
-    if auth = utils.getConfig 'auth'
+    if auth = config_utils.getConfig 'auth'
       auth = auth() if _.isFunction auth
-      if auth_header = utils.getConfig 'auth_header'
+      if auth_header = config_utils.getConfig 'auth_header'
         (opts.headers ?= {})[auth_header] = auth
       else
         params.auth = auth
 
-    params._client_id = client_id if client_id = utils.getConfig 'client_id'
+    if client_id = config_utils.getConfig 'client_id'
+      params._client_id = client_id
 
     opts.url = utils.addUrlParams opts.url, params
 
@@ -102,7 +103,7 @@ define (require) ->
       opts.processData = false
       opts.data = JSON.stringify opts.data if _.isObject opts.data
 
-    if base = utils.getConfig 'base'
+    if base = config_utils.getConfig 'base'
       opts.url = base + opts.url.replace /^\//, ''
 
     $.ajax(opts).then( (data, textStatus, jqXHR) ->

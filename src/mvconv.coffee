@@ -1,14 +1,14 @@
 define (require) ->
   _ = require 'underscore'
-  utils = require 'utils'
+  utils = require 'scapula-utils'
 
   mvconv = {}
 
   mvconv.html = (dir, val) ->
     if dir is 'ModelToView'
-      $.ntEncodeHtml val ? ''
+      utils.encodeHtml val ? ''
     else
-      $.ntDecodeHtml val
+      utils.decodeHtml val
 
   mvconv.float = (dir, val) ->
     if dir is 'ViewToModel'
@@ -57,7 +57,7 @@ define (require) ->
 
   mvconv.trimText = (dir, val) ->
     if dir is 'ViewToModel'
-      $.trim val
+      (val ? '').trim()
     else
       val ? ''
 

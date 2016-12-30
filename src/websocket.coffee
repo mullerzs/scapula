@@ -1,7 +1,7 @@
 define (require) ->
   _ = require 'underscore'
-  vent = require 'vent'
-  utils = require 'utils'
+  vent = require './vent'
+  config_utils = require './config-utils'
 
   ws =
     _sockets : {}
@@ -13,8 +13,8 @@ define (require) ->
     return ws._sockets[name].conn if !opts.retry && ws._sockets[name]
 
     if !url.match /^wss?\:\/\//
-      url = utils.getHost() + url if url.match /^\//
-      url = (if utils.getProtocol() is 'https:' then 'wss' else 'ws') +
+      url = window.location.host + url if url.match /^\//
+      url = (if window.location.protocol is 'https:' then 'wss' else 'ws') +
         "://#{url}"
 
     # console.log "WS[#{name}] CONNECT: #{url}"
@@ -22,7 +22,7 @@ define (require) ->
     socket = ws._sockets[name] ?= {}
     subprot = if opts.subprot?
       if opts.subprot is false then null else opts.subprot
-    else if !_.isFunction(auth = utils.getConfig 'auth')
+    else if !_.isFunction(auth = config_utils.getConfig 'auth')
       auth
     socket.conn = new WebSocket url, subprot
     socket.attempts = 1 unless opts.retry

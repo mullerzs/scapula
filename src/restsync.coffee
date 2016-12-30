@@ -1,8 +1,9 @@
 define (require) ->
   _ = require 'underscore'
   Backbone = require 'backbone'
-  ajax = require 'ajax'
-  utils = require 'utils'
+  ajax = require './ajax'
+  config_utils = require './config-utils'
+  utils = require 'scapula-utils'
 
   methodMap =
     create : 'POST'
@@ -13,13 +14,13 @@ define (require) ->
   Backbone.sync = (method, model, options) ->
     type = methodMap[method]
 
-    utils.throwError 'Invalid sync method!' unless type
+    throw new Error 'Invalid sync method!' unless type
 
     params = {}
     options ?= {}
 
     options.synctype = method
-    options.cid = cidname if (cidname = utils.getConfig 'client_id_name')
+    options.cid = cidname if (cidname = config_utils.getConfig 'client_id_name')
 
     success = options.success
     error = options.error
@@ -33,7 +34,7 @@ define (require) ->
       queueId = params.url
       params.url = '/api' + params.url
 
-    utils.throwError 'No url for request!' unless params.url
+    throw new Error 'No url for request!' unless params.url
 
     if model
       if method is 'read'

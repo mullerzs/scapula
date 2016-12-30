@@ -1,7 +1,7 @@
 define (require) ->
   _ = require 'underscore'
   Backbone = require 'backbone'
-  utils = require 'utils'
+  utils = require 'scapula-utils'
 
   Base = {}
 
@@ -131,7 +131,7 @@ define (require) ->
           item.set @orderAttr, @pluck 'id' if item.isNew() && @orderAttr
           @sort item: item, from: from
       else
-        utils.throwError 'No model item specified for sortItem'
+        throw new Error 'No model item specified for sortItem'
 
     saveOrder: =>
       if @orderUrl
@@ -183,7 +183,7 @@ define (require) ->
           tmp = []
           for kword in kwords
             for fld in flds
-              pat = new RegExp '\\s' + $.ntQuoteMeta(kword), 'i'
+              pat = new RegExp '\\s' + utils.quoteMeta(kword), 'i'
               val = item.get fld
               res = pat.test ' ' + val if val?
               if res

@@ -1,10 +1,10 @@
 define (require) ->
   _ = require 'underscore'
   Backbone = require 'backbone'
-  ModelBinder = require 'modelbinder'
-  Handlebars = require 'handlebars'
-  utils = require 'utils'
-  vent = require 'vent'
+  ModelBinder = require 'backbone.modelbinder'
+  Handlebars = require 'handlebars/dist/handlebars'
+  utils = require 'scapula-utils'
+  vent = require './vent'
 
   Base = {}
 
@@ -95,7 +95,7 @@ define (require) ->
         else if _.isObject(@tplvars[v]) && _.isObject(vars[v])
           _.extend @tplvars[v], vars[v]
         else
-          utils.throwError 'Incompatible types!', 'extendTplVar'
+          throw new Error 'Incompatible types!', 'extendTplVar'
 
     addModelDomBinding: (fld, binding) =>
       if _.isObject fld
@@ -146,7 +146,7 @@ define (require) ->
       if @model?.collection?.rankAttr
         @model.collection.sortItem @model, @model.collection, opts
       else
-        utils.throwError 'No sorted collection found for model', 'sortError'
+        throw new Error 'No sorted collection found for model', 'sortError'
 
     renderTpl: =>
       @template = Handlebars.compile @template unless _.isObject @template
@@ -176,7 +176,7 @@ define (require) ->
         @rendered = true
         @trigger 'render'
       else
-        utils.throwError 'No template specified for the view'
+        throw new Error 'No template specified for the view'
 
       @
 
@@ -324,7 +324,7 @@ define (require) ->
       if _.isObject view
         key = name || view.model?.cid || view.cid
       else
-        utils.throwError 'Invalid view given for storeChild'
+        throw new Error 'Invalid view given for storeChild'
 
       view.parent = @
       @children[key] = view
@@ -429,7 +429,7 @@ define (require) ->
         itemView = new ItemView opts
         @storeChild itemView
       else
-        utils.throwError 'No ItemView specified for the CollectionView'
+        throw new Error 'No ItemView specified for the CollectionView'
 
       @trigger 'builditemview', itemView
 

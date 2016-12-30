@@ -1,6 +1,7 @@
 define (require) ->
   _ = require 'underscore'
-  utils = require 'utils'
+  utils = require 'scapula-utils'
+  config_utils = require 'config-utils'
   Handlebars = require 'handlebars'
 
   module = {}
@@ -15,7 +16,8 @@ define (require) ->
       if expr.match /^lang\./
         ret = langobj[expr.replace /^lang\./, ''] unless 'lang' in skip
       else if expr.match /^cfg\./
-        ret = utils.getConfig(expr.replace /^cfg\./, '') unless 'cfg' in skip
+        unless 'cfg' in skip
+          ret = config_utils.getConfig expr.replace /^cfg\./, ''
       else
         plexpr = expr.match /^(\S+)\s+(.+)$/
         if plexpr
@@ -86,7 +88,7 @@ define (require) ->
           vars: opts.vars, keepVar: !!opts.htmlVars
 
       if (opts.encode ? opts.hbs) && !module.isHtmlKey key
-        str = $.ntEncodeHtml str
+        str = utils.encodeHtml str
 
       if opts.htmlVars
         str = module.interpolate str, langobj, vars: opts.htmlVars

@@ -1,7 +1,7 @@
 define (require) ->
   _ = require 'underscore'
-  vent = require 'vent'
-  utils = require 'utils'
+  vent = require './vent'
+  utils = require 'scapula-utils'
 
   class Router extends Backbone.Router
     initialize: (opts) ->
