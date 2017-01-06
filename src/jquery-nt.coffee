@@ -153,6 +153,7 @@
       when 'linux' then platform.match /^linux/i
       when 'mac' then platform.match /^mac/i
       when 'win' then platform.match /^win/i
+      when 'ios' then platform.match /(ipad|ipod|iphone)/i
 
     ret
 
