@@ -636,12 +636,13 @@
 
   class plugins.Dropdown extends $._ntPluginBaseClass
     defaults:
-      'contClass'  : 'nt-dd-cont'
-      'boxClass'   : 'nt-dd'
-      'optsClass'  : 'nt-dd-opts'
-      'selClass'   : 'nt-selected'
-      'hoverClass' : 'nt-itemhover'
-      'tabindex'   : 0
+      'contClass'   : 'nt-dd-cont'
+      'boxClass'    : 'nt-dd'
+      'optsClass'   : 'nt-dd-opts'
+      'selClass'    : 'nt-selected'
+      'hoverClass'  : 'nt-itemhover'
+      'tabindex'    : 0
+      'limitHeight' : false
 
     init: ->
       @$el.wrap('<div>').hide()
@@ -712,11 +713,19 @@
       else
         'Toggle'
 
-      @$options['slide' + func](100, =>
+      if @opts.limitHeight && (show || !show? && !@$options.is ':visible')
+        offset = @$box.offset().top +
+          parseFloat(@$options.css 'top') +
+          parseFloat @$options.css 'padding-top'
+        $ul = @$options.find 'ul'
+        h = $(window).height() - offset -
+          2 * parseFloat @$options.css 'padding-bottom'
+        $ul.height h if h > 0
+
+      @$options['slide' + func] 100, =>
         @$options.find('li').removeClass(@opts.hoverClass)
           .filter('.' + @opts.selClass).addClass @opts.hoverClass
         @$el.trigger 'toggle', @$options
-      )
 
     hoverOption: (e) =>
       $(e.target).addClass(@opts.hoverClass).siblings()
