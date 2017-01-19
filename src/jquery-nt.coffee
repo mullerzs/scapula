@@ -720,7 +720,7 @@
         $ul = @$options.find 'ul'
         h = $(window).height() - offset -
           2 * parseFloat @$options.css 'padding-bottom'
-        $ul.height h if h > 0
+        $ul.css 'max-height', "#{h}px" if h > 0
 
       @$options['slide' + func] 100, =>
         @$options.find('li').removeClass(@opts.hoverClass)
