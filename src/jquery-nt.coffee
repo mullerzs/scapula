@@ -714,7 +714,7 @@
         'Toggle'
 
       if @opts.limitHeight && (show || !show? && !@$options.is ':visible')
-        offset = @$box.offset().top +
+        offset = @$box.offset().top - $(window).scrollTop() +
           parseFloat(@$options.css 'top') +
           parseFloat @$options.css 'padding-top'
         $ul = @$options.find 'ul'
