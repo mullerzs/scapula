@@ -114,7 +114,8 @@
         src=\"#{src}\" allowfullscreen></iframe>"
 
 
-  $.ntForceBlur = ->
+  $.ntForceBlur = (target) ->
+    $(target).blur() if target
     type = if $.ntIsMobile() then 'month' else 'text'
     $('<input type="' + type + '"
         style="font-size: 16px; position: fixed; top: 0; left: -10000px">')
