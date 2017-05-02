@@ -802,7 +802,10 @@
             item
 
           if active
-            $item.addClass(@opts.itemClass).append $('<a>').html text
+            $a = $('<a>').html text
+            for attr in [ 'href', 'target' ] when item[attr]?
+              $a.attr attr, item[attr]
+            $item.addClass(@opts.itemClass).append $a
           else
             $item.html text
 
