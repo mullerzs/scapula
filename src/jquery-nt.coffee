@@ -424,7 +424,10 @@
 
 
   $.ntMainScrollCont = ->
-    if $.ntBrowser('firefox') then $('html') else $('body')
+    if $.ntBrowser('firefox') || $.ntBrowser('chrome')
+      $('html')
+    else
+      $('body')
 
 
   # TODO: handle when container is smaller than item
