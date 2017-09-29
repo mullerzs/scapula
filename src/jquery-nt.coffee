@@ -424,7 +424,8 @@
 
 
   $.ntMainScrollCont = ->
-    if $.ntBrowser('edge') || $.ntBrowser('safari')
+    if $.ntBrowser('edge') || $.ntBrowser('safari') ||
+        $.ntPlatform('ios') && $.ntBrowser('chrome')
       $('body')
     else
       $('html')
