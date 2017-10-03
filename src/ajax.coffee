@@ -126,8 +126,8 @@ define (require) ->
       else
         'req'
       error = ajax._processError "error_#{code}", opts
-      dfd.reject error if dfd
-      $.Deferred().reject error
+      dfd.reject error, jqXHR if dfd
+      $.Deferred().reject error, jqXHR
     ).always ->
       # vent.trigger 'ajax:end'
       vent.trigger 'ajax:hide' unless opts.noloader || --ajax.progCnt
