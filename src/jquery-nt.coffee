@@ -641,13 +641,14 @@
 
   class plugins.Dropdown extends $._ntPluginBaseClass
     defaults:
-      'contClass'   : 'nt-dd-cont'
-      'boxClass'    : 'nt-dd'
-      'optsClass'   : 'nt-dd-opts'
-      'selClass'    : 'nt-selected'
-      'hoverClass'  : 'nt-itemhover'
-      'tabindex'    : 0
-      'limitHeight' : false
+      'contClass'     : 'nt-dd-cont'
+      'boxClass'      : 'nt-dd'
+      'optsClass'     : 'nt-dd-opts'
+      'selClass'      : 'nt-selected'
+      'hoverClass'    : 'nt-itemhover'
+      'tabindex'      : 0
+      'limitHeight'   : false
+      'disabledClass' : 'nt-disabled'
 
     init: ->
       @$el.wrap('<div>').hide()
@@ -675,6 +676,15 @@
       $(document).on 'click', @clickDoc
 
       @setValue @$el.val()
+      @disable() if @$el.is ':disabled'
+
+    enable: =>
+      @$box.removeClass @opts.disabledClass
+      @$el.removeAttr 'disabled'
+
+    disable: =>
+      @$box.addClass @opts.disabledClass
+      @$el.prop 'disabled', true
 
     clickDoc: (e) =>
       $tgt = $(e.target)
@@ -688,10 +698,12 @@
       @$box.focus()
 
     clickBox: =>
+      return if @$box.hasClass @opts.disabledClass
       @toggleOptions()
       @$box.focus()
 
     keydownBox: (e) =>
+      return if @$box.hasClass @opts.disabledClass
       key = e.which
       # key codes: ENTER: 13, ESC: 27, UP: 38, DOWN: 40
       if key in [ 13, 27, 38, 40 ]
