@@ -123,8 +123,10 @@ define (require) ->
         'notfound'
       else if jqXHR.status == 401
         'unauth'
-      else
+      else if jqXHR.status == 400
         'req'
+      else
+        'conn'
       error = ajax._processError "error_#{code}", opts
       dfd.reject error, jqXHR if dfd
       $.Deferred().reject error, jqXHR
