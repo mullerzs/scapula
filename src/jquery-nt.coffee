@@ -641,14 +641,15 @@
 
   class plugins.Dropdown extends $._ntPluginBaseClass
     defaults:
-      'contClass'     : 'nt-dd-cont'
-      'boxClass'      : 'nt-dd'
-      'optsClass'     : 'nt-dd-opts'
-      'selClass'      : 'nt-selected'
-      'hoverClass'    : 'nt-itemhover'
-      'tabindex'      : 0
-      'limitHeight'   : false
-      'disabledClass' : 'nt-disabled'
+      'contClass'        : 'nt-dd-cont'
+      'boxClass'         : 'nt-dd'
+      'optsClass'        : 'nt-dd-opts'
+      'selClass'         : 'nt-selected'
+      'hoverClass'       : 'nt-itemhover'
+      'tabindex'         : 0
+      'limitHeight'      : false
+      'disabledClass'    : 'nt-disabled'
+      'placeholderClass' : 'nt-placeholder'
 
     init: ->
       @$el.wrap('<div>').hide()
@@ -659,8 +660,10 @@
       @$options = $('<div>').addClass(@opts.optsClass).appendTo $cont
 
       $ul = $('<ul>')
+      $sel_option = null
       @$el.find('option').each (i, el) ->
         $el = $(el)
+        $sel_option = $el if $el.attr 'selected'
         $('<li>').html($el.text()).attr('data-value', $el.attr 'value')
           .appendTo $ul
 
@@ -675,7 +678,11 @@
       @$options.on 'click', 'li', @clickOption
       $(document).on 'click', @clickDoc
 
-      @setValue @$el.val()
+      @setValue if !$sel_option && @opts.placeholder
+        null
+      else
+        @$el.val()
+
       @disable() if @$el.is ':disabled'
 
     enable: =>
@@ -749,18 +756,19 @@
         .removeClass @opts.hoverClass
 
     setValue: (val) =>
-      return unless val?
       $items = @$options.find('li')
 
-      if typeof(val) is 'object'
-        $selitem = $(val)
-      else
-        $items.each (i, el) ->
-          if $(el).data('value')?.toString() is val.toString()
-            $selitem = $(el)
-            return
+      if val?
+        if typeof(val) is 'object'
+          $selitem = $(val)
+        else
+          $items.each (i, el) ->
+            if $(el).data('value')?.toString() is val?.toString()
+              $selitem = $(el)
+              return
 
-      if $selitem
+      if $selitem?[0]
+        @$box.removeClass @opts.placeholderClass
         $curritem = $items.filter '.' + @opts.selClass
 
         if $selitem[0] isnt $curritem[0]
@@ -771,6 +779,11 @@
           @$el.val(val).trigger 'change' unless val is @$el.val()
 
         @toggleOptions false
+
+      else if @opts.placeholder
+        @$el.val null
+        @$box.text @opts.placeholder
+        @$box.addClass @opts.placeholderClass
 
     destroy: =>
       $(document).off 'click', @clickDoc
@@ -1279,7 +1292,7 @@
     destroy: =>
       @hide destroy: true
       delete @_showTimer
-      @$el.removeClass(@opts.modalClass).detach()
+      @$el?.removeClass(@opts.modalClass).detach()
 
 
   # ---- Tabs -----------------------------------------------------------------
