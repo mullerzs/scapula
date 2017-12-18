@@ -77,6 +77,9 @@ define (require) ->
       keys = if _.isArray args[0] then args[0] else args
       _.extend obj, _.pick srcobj, keys
 
+  utils.chkNonEmptyStr = (str) ->
+    _.isString(str) && str.trim().length > 0
+
   utils._chkRegExp = (str, re_name) ->
     re = new RegExp "^#{utils[re_name]}$", 'i'
     str if str?.toString().match re
