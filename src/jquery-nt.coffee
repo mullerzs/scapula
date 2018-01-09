@@ -1543,8 +1543,8 @@
     eventPos: (e) =>
       oe = e.originalEvent
 
-      x : oe.pageX ? oe.changedTouches[0].pageX
-      y : oe.pageY ? oe.changedTouches[0].pageY
+      x : oe.changedTouches?[0]?.pageX ? oe.pageX
+      y : oe.changedTouches?[0]?.pageY ? oe.pageY
 
     touchstart: (e) =>
       @_touchTimer = setTimeout =>
