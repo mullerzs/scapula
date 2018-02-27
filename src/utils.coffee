@@ -48,6 +48,14 @@ define (require) ->
       _.defaults to.events, mixin.events
     classRef
 
+  utils.deepClone = (obj) ->
+    clone = _.clone obj
+
+    _.each clone, (value, key) ->
+      clone[key] = utils.deepClone value if _.isObject value
+
+    clone
+
   utils.obj2Array = (obj, opts) ->
     ret = []
     if _.isObject obj
