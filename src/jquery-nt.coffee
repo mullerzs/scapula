@@ -755,7 +755,7 @@
       $(e.target).addClass(@opts.hoverClass).siblings()
         .removeClass @opts.hoverClass
 
-    setValue: (val) =>
+    setValue: (val, opts) =>
       $items = @$options.find('li')
 
       if val?
@@ -776,7 +776,7 @@
           $selitem.addClass @opts.selClass
           @$box.text $selitem.text()
           val = $selitem.data('value')?.toString()
-          @$el.val(val).trigger 'change' unless val is @$el.val()
+          @$el.val(val).trigger 'change', opts unless val is @$el.val()
 
         @toggleOptions false
 
