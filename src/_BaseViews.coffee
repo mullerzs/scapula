@@ -167,7 +167,7 @@ define (require) ->
       @$el.html @template args
 
     render: =>
-      if @template
+      if @template?
         @beforeRender() if _.isFunction @beforeRender
         @rendered = false
         @renderTpl()
