@@ -116,6 +116,9 @@ define (require) ->
 
     qs[0] + str + qs[1]
 
+  utils.normalizeSpace = (str) ->
+    (str ? '').trim().replace /\s+/, ' '
+
   utils.extractKeywords = (str, opts) ->
     opts ?= {}
     ret = '' : []
@@ -347,6 +350,9 @@ define (require) ->
               break if tmp?
           else
             tmp = utils.getProp obj, pname, popts
+
+          if _.isFunction popts.transform
+            tmp = popts.transform tmp
 
           if popts.natural && _.isString tmp
             tmp = tmp.replace(/(\d+)/g, "0000000000$1")
