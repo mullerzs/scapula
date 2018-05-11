@@ -46,10 +46,9 @@ define (require) ->
             [ options.ids ]
         else if !options.data && method isnt 'delete'
           params.data = if method is 'create'
-            model.cloneAttrs
+            model.cloneAttrs _.extend _.pick(options, 'cid', 'synctype'),
               children     : 'auto'
               skipInternal : true
-              cid          : options.cid
           else
             model.dirtyAttrs clear: true
 
