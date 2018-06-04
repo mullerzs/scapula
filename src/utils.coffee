@@ -425,7 +425,9 @@ define (require) ->
 
   utils.getUrlParams = ->
     _.object _.compact _.map location.search[1..].split('&'), (item) ->
-      if item then item.split '='
+      if item
+        _.map item.split('='), (i) ->
+          if i? then decodeURIComponent i else i
 
   utils.shareUrlSocial = (url, prov) ->
     base = if prov is 'FB'
