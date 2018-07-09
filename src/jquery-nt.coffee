@@ -172,7 +172,10 @@
     _buildOption = (_opt) ->
       if $.isPlainObject(_opt) && _opt.value?
         value = $.ntEncodeHtml _opt.value
-        descr = if _opt.descr? then $.ntEncodeHtml _opt.descr else value
+        descr = if _opt.descr?
+          if _opt.html then _opt.descr else $.ntEncodeHtml _opt.descr
+        else
+          value
         _ret = "<option value=\"#{value}\""
         _ret += ' selected="selected"' if _opt.sel
         _ret + ">#{descr}</option>"
