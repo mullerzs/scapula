@@ -35,18 +35,29 @@ define (require) ->
     reset: (models, opts) =>
       if models? && @rankAttr
         models = [ models ] unless _.isArray models
-        unranked = _.find models, (model) =>
-          if model instanceof Backbone.Model
-            !model.get(@rankAttr)?
+
+        max = null
+        unranked = false
+
+        _.each models, (model) ->
+          rank = if model instanceof Backbone.Model
+            model.get @rankAttr
           else
-            !model[@rankAttr]?
+            model[@rankAttr]
+
+          if rank?
+            max = rank if !max? || max < rank
+          else
+            unranked = true
 
         if unranked
-          models = _.map models, (model, i) =>
+          i = Math.ceil(max ? 0) + 1
+
+          models = _.map models, (model) =>
             if model instanceof Backbone.Model
-              model.set @rankAttr, i + 1
+              model.set @rankAttr, i++ unless model.get(@rankAttr)?
             else
-              (_model = if model then _.clone(model) else {})[@rankAttr] = i + 1
+              (_model = if model then _.clone(model) else {})[@rankAttr] ?= i++
               _model
 
       super models, opts
