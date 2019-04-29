@@ -480,7 +480,8 @@ define (require) ->
 
       @closeEmptyView()
 
-      if @collection.deferData && @collection.deferData.state() is 'pending'
+      if !opts?.synctype &&
+          @collection.deferData && @collection.deferData.state() is 'pending'
         @collection.deferData.done => @_render items, opts
       else
         @_render items, opts
