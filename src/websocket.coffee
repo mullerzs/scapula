@@ -24,7 +24,17 @@ define (require) ->
       if opts.subprot is false then null else opts.subprot
     else if !_.isFunction(auth = utils.getConfig 'auth')
       auth
-    socket.conn = new WebSocket url, subprot
+
+    _url = if opts.auth?
+      utils.addUrlParams url,
+        auth: if _.isFunction opts.auth
+            opts.auth()
+          else
+            opts.auth
+    else
+      url
+
+    socket.conn = new WebSocket _url, subprot
     socket.attempts = 1 unless opts.retry
 
     socket.conn.onopen = ->
