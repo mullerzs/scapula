@@ -106,11 +106,16 @@ define (require) ->
       opts.url = base + opts.url.replace /^\//, ''
 
     $.ajax(opts).then( (data, textStatus, jqXHR) ->
-      if data?.success
-        data = data.content || {}
+      # TODO: make this as default
+      ajax_check_code = utils.getConfig 'ajax_check_code'
+      legacy_success = !ajax_check_code && data?.success
+
+      if legacy_success || ajax_check_code && jqXHR.status < 400
+        data = data.content || {} if legacy_success
         dfd.resolve.call @, data, textStatus, jqXHR if dfd
       else
-        error = ajax._processError data?.error, opts
+        error = data?.error unless ajax_check_code
+        error = ajax._processError error, opts
         ret = $.Deferred().reject error
         dfd.reject error if dfd
 
