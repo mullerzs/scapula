@@ -126,6 +126,8 @@ define (require) ->
         'internal'
       else if jqXHR.status == 404
         'notfound'
+      else if jqXHR.status == 403
+        'forbidden'
       else if jqXHR.status == 401
         'unauth'
       else if jqXHR.status == 400
