@@ -51,4 +51,3 @@ define (require) ->
 
     _done: =>
       @queue.shift()
-      @stop() unless @queue.length
