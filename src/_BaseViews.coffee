@@ -493,7 +493,8 @@ define (require) ->
 
       @closeChildren noremove: true
 
-      if !opts?.reset || !@rendered? || @itemCont && !@$el.find(@itemCont)[0]
+      if opts?.forceRender || !opts?.reset || !@rendered? ||
+          @itemCont && !@$el.find(@itemCont)[0]
         @$el.empty()
         @renderTpl() if @template
         @toggleModelDomBindings true if @model && @modelBindOnRender
