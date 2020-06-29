@@ -472,8 +472,15 @@
       offtop - padding
 
     if dst?
-      $scrollcont.animate scrollTop: dst,
-        $.extend duration: 200, opts.animationOpts
+      if opts.animationOpts?.duration == 0
+        if $.isFunction opts.animationOpts.start
+          opts.animationOpts.start()
+        $scrollcont.scrollTop dst
+        if $.isFunction opts.animationOpts.complete
+          opts.animationOpts.complete()
+      else
+        $scrollcont.animate scrollTop: dst,
+          $.extend duration: 200, opts.animationOpts
 
     $(@)
 
