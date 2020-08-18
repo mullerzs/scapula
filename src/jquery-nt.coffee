@@ -670,11 +670,36 @@
       @$options = $('<div>').addClass(@opts.optsClass).appendTo $cont
 
       $ul = $('<ul>')
-      $sel_option = null
-      @$el.find('option').each (i, el) ->
-        $el = $(el)
-        $sel_option = $el if $el.attr 'selected'
-        $('<li>').html($el.text()).attr('data-value', $el.attr 'value')
+      sel_option = null
+
+      options = if @opts.options
+        @opts.options.map (option, i) ->
+          items = option.descr
+          items = [ items ] unless $.isArray items
+          _wrap = (x) ->
+            if items.length > 1 then "<div>#{x}</div>" else x
+          descr = items.map (item) ->
+            item = type: 'text', text: item if typeof(item) is 'string'
+            switch item.type
+              when 'text' then _wrap $.ntEncodeHtml item.text
+              when 'html' then _wrap item.html
+              when 'img' then "<img src=\"#{item.src}\">"
+          sel_option = option.value if option.selected
+          value: option.value
+          descr: descr.join ''
+      else
+        @$el.find('option').map (i, el) ->
+          $el = $(el)
+          value = $el.attr 'value'
+          sel_option = value if $el.attr 'selected'
+          value: value
+          descr: $el.text()
+        .get()
+
+      options.forEach (option) ->
+        $('<li>')
+          .html option.descr
+          .attr 'data-value', option.value
           .appendTo $ul
 
       @$options.append $ul
@@ -688,10 +713,12 @@
       @$options.on 'click', 'li', @clickOption
       $(document).on 'click', @clickDoc
 
-      @setValue if !$sel_option && @opts.placeholder
+      @setValue if sel_option
+        sel_option
+      else if @opts.placeholder
         null
       else
-        @$el.val()
+        options[0]?.value
 
       @disable() if @$el.is ':disabled'
 
@@ -711,7 +738,7 @@
 
     clickOption: (e) =>
       e.stopPropagation()
-      @setValue $(e.target)
+      @setValue $(e.target).closest 'li'
       @$box.focus()
 
     clickBox: =>
@@ -762,8 +789,9 @@
         @$el.trigger 'toggle', @$options
 
     hoverOption: (e) =>
-      $(e.target).addClass(@opts.hoverClass).siblings()
-        .removeClass @opts.hoverClass
+      $(e.target).closest 'li'
+        .addClass @opts.hoverClass
+        .siblings().removeClass @opts.hoverClass
 
     setValue: (val, opts) =>
       $items = @$options.find('li')
@@ -784,7 +812,12 @@
         if $selitem[0] isnt $curritem[0]
           $items.removeClass @opts.selClass
           $selitem.addClass @opts.selClass
-          @$box.text $selitem.text()
+          # TODO: more sophisticated selected item display
+          if ($children = $selitem.children()).length == 0 ||
+             (text = $children.first().text().trim()) isnt ''
+            @$box.text text || $selitem.text()
+          else
+            @$box.html $children.first().clone()
           val = $selitem.data('value')?.toString()
           @$el.val(val).trigger 'change', opts unless val is @$el.val()
 
