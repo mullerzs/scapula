@@ -673,6 +673,9 @@
       sel_option = null
 
       options = if @opts.options
+        @$el.html $.ntSelectOptions options: @opts.options.map (option) ->
+          value: option.value
+          descr: option.value
         @opts.options.map (option, i) ->
           items = option.descr
           items = [ items ] unless $.isArray items
@@ -684,7 +687,7 @@
               when 'text' then _wrap $.ntEncodeHtml item.text
               when 'html' then _wrap item.html
               when 'img' then "<img src=\"#{item.src}\">"
-          sel_option = option.value if option.selected
+          sel_option = option.value if option.sel
           value: option.value
           descr: descr.join ''
       else
