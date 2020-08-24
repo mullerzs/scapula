@@ -195,6 +195,17 @@
 
   # ---- Stateless plugins ----------------------------------------------------
 
+  $.fn._val = $.fn.val
+
+  $.fn.val = (val) ->
+    if arguments.length >= 1
+      ret = $.fn._val.apply @, arguments
+      if $(@).data 'ntDropdown'
+        $(@).ntDropdown 'setValue', val, init: true
+      ret
+    else
+      $.fn._val.call @
+
   $.fn.ntOuterHtml = ->
     $(@).clone().wrap('<div></div>').parent().html()
 
@@ -822,7 +833,8 @@
           else
             @$box.html $children.first().clone()
           val = $selitem.data('value')?.toString()
-          @$el.val(val).trigger 'change', opts unless val is @$el.val()
+          if val isnt @$el.val() && !opts?.init
+            @$el._val(val).trigger 'change', opts
 
         @toggleOptions false
 
