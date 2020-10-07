@@ -728,11 +728,12 @@
       $(document).on 'click', @clickDoc
 
       @setValue if sel_option
-        sel_option
-      else if @opts.placeholder
-        null
-      else
-        options[0]?.value
+          sel_option
+        else if @opts.placeholder
+          null
+        else
+          options[0]?.value
+      , triggerChange: false
 
       @disable() if @$el.is ':disabled'
 
@@ -834,7 +835,8 @@
             @$box.html $children.first().clone()
           val = $selitem.data('value')?.toString()
           if val isnt @$el.val() && !opts?.init
-            @$el._val(val).trigger 'change', opts
+            @$el._val val
+            @$el.trigger 'change', opts if opts?.triggerChange ? true
 
         @toggleOptions false
 
