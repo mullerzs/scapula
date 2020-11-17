@@ -549,7 +549,14 @@
         obj = $(@).data pname
 
         if typeof(opts) is 'string'
-          $.error "Cannot call #{opts}, #{pname} is not present" unless obj
+          opts = _try[1] if _try = opts.match /^try\s+(.+)$/i
+
+          if !obj
+            if _try
+              return $(@)
+            else
+              $.error "Cannot call #{opts}, #{pname} is not present"
+
           obj[opts].apply obj, args
 
           if opts is 'destroy'
