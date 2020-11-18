@@ -41,9 +41,24 @@ define (require) ->
           ret =
             callback : p.callback
             pars     : pars
+            view     : v
+            parnames : p.parnames
           break
 
       ret
+
+    resolveRoute: (dst) =>
+      route_data = @checkRoute dst
+
+      if !route_data
+        null
+      else
+        opts = _.object \
+          _.map (route_data.parnames || []), (parname, i) ->
+            [ parname, route_data.pars?[i + 1] ]
+
+        view: route_data.view
+        opts: opts
 
     callRoute: (dst) =>
       route_data = @checkRoute dst
