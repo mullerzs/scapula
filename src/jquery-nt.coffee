@@ -202,6 +202,8 @@
       ret = $.fn._val.apply @, arguments
       if $(@).data 'ntDropdown'
         $(@).ntDropdown 'setValue', val, init: true
+      else if $(@).data 'select2'
+        $(@).trigger 'change.select2'
       ret
     else
       $.fn._val.call @
