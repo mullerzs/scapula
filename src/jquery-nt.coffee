@@ -440,12 +440,7 @@
 
 
   $.ntMainScrollCont = ->
-    if $.ntBrowser('edge') || $.ntBrowser('safari') ||
-        $.ntPlatform('ios') && $.ntBrowser('chrome')
-      $('body')
-    else
-      $('html')
-
+    $(document.scrollingElement ? document.documentElement ? 'html')
 
   # TODO: handle when container is smaller than item
   $.fn.ntScrollToMe = (opts = {}) ->
