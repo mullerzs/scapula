@@ -833,10 +833,14 @@
           $selitem.addClass @opts.selClass
           # TODO: more sophisticated selected item display
           if ($children = $selitem.children()).length == 0 ||
-             (text = $children.first().text().trim()) isnt ''
+             !@opts.fullCloneSelect &&
+               (text = $children.first().text().trim()) isnt ''
             @$box.text text || $selitem.text()
           else
-            @$box.html $children.first().clone()
+            @$box.html if @opts.fullCloneSelect
+              $children.clone()
+            else
+              $children.first().clone()
           val = $selitem.data('value')?.toString()
           if val isnt @$el.val() && !opts?.init
             @$el._val val
