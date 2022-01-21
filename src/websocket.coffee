@@ -34,6 +34,11 @@ define (require) ->
     else
       url
 
+    _url = utils.addUrlParams _url,
+        _: Date.now()
+      ,
+        merge: true
+
     socket.conn = new WebSocket _url, subprot
     socket.attempts = 1 unless opts.retry
 
@@ -46,11 +51,11 @@ define (require) ->
       # console.log "WS[#{name}] CLOSED (code: #{e.code}, wasClean: #{e.wasClean})"
       clearTimeout socket._reconnect_timer
 
-      if e.wasClean
+      if e.wasClean && e.code in [ 1000, 1001 ]
         delete ws._sockets[name]
       else
         to = ws.getReconnectTimeout socket.attempts
-        # console.log 'RECONNECT IN ' + to + ' ms'
+        # console.log "WS[#{name}] RECONNECT IN #{to} ms"
 
         socket._reconnect_timer = setTimeout ->
           socket.attempts++

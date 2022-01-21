@@ -415,6 +415,11 @@ define (require) ->
 
   utils.addUrlParams = (url, params, opts) ->
     if url? && !_.isEmpty params
+      if opts?.merge
+        _params = utils.getUrlParams url
+        url = url.replace /\?.*$/, ''
+        params = _.extend _params, params
+
       url += (if url.match /\?/ then '&' else '?') +
         _.map(_.pairs(params), (p) ->
           p[1] = encodeURIComponent p[1] if opts?.encode
@@ -423,8 +428,16 @@ define (require) ->
 
     url
 
-  utils.getUrlParams = ->
-    _.object _.compact _.map location.search[1..].split('&'), (item) ->
+  utils.getUrlParams = (url) ->
+    params_str = if url?
+        if _.isString(url) && (m = url.match /\?(.+)$/)?
+          m[1]
+        else
+          ''
+      else
+        location.search[1..]
+
+    _.object _.compact _.map params_str.split('&'), (item) ->
       if item
         _.map item.split('='), (i) ->
           if i? then decodeURIComponent i else i
