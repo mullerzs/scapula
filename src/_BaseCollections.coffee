@@ -183,9 +183,14 @@ define (require) ->
     #     tags: flds: 'descr'
     #   collection.search 'john', [ 'name', 'email' ],
     #     tags: flds: 'descr', kwords: 'superhero'
-    search: (kws, flds, children) =>
+    search: (kws, flds, children, opts) =>
       kws = utils.extractKeywords kws unless _.isArray kws
       flds = [ flds ] if flds? && !_.isArray flds
+
+      re_strip = _.map (opts?.stripChars ? []), (spec) ->
+        $.ntQuoteMeta spec
+      .join ''
+      re_strip = "[#{re_strip}]*" if re_strip
 
       @filter (item) ->
         kwords = _.clone kws
@@ -193,11 +198,9 @@ define (require) ->
         if flds && kwords
           tmp = []
           for kword in kwords
-            for fld in flds
-              pat = new RegExp '\\s' + $.ntQuoteMeta(kword), 'i'
-              val = item.get fld
-              res = pat.test ' ' + val if val?
-              if res
+            for fld in flds when (val = item.get fld)?
+              re_search = '\\s' + re_strip + $.ntQuoteMeta kword
+              if (new RegExp re_search, 'i').test ' ' + val
                 tmp.push kword
                 break
 
