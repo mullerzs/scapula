@@ -117,7 +117,7 @@ define (require) ->
     qs[0] + str + qs[1]
 
   utils.normalizeSpace = (str) ->
-    (str ? '').trim().replace /\s+/, ' '
+    (str ? '').trim().replace /\s+/g, ' '
 
   utils.extractKeywords = (str, opts) ->
     opts ?= {}
