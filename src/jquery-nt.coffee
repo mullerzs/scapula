@@ -948,7 +948,8 @@
 
     hideMenu: =>
       return unless @$menu.is ':visible'
-      @$menu.fadeOut 'fast'
+      @$menu.fadeOut 'fast', =>
+        @$el.trigger 'hidemenu', @$menu
 
     toggleItems: (ids, bool) =>
       ids = [ ids ] unless $.isArray ids
