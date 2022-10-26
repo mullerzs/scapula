@@ -873,6 +873,7 @@
       appendTo       : 'body'
       menuClass      : 'nt-dd-opts'
       itemClass      : 'nt-dd-item'
+      hoverClass     : 'nt-itemhover'
       separatorClass : 'nt-dd-separator'
       labelClass     : 'nt-dd-label'
       align          : 'left'
@@ -913,9 +914,11 @@
 
       @$menu.addClass(@opts.menuClass).hide().on \
         'click', ".#{@opts.itemClass}", @clickItem
+      @$menu.on 'mouseover', ".#{@opts.itemClass}", @hoverItem
       @$menu.appendTo $(@opts.appendTo) if @opts.appendTo
 
       @$el.click @toggleMenu
+      @$el.keydown @keydownMenu
       $(document).on 'click', @clickDoc
 
     toggleMenu: =>
@@ -949,6 +952,7 @@
     hideMenu: =>
       return unless @$menu.is ':visible'
       @$menu.fadeOut 'fast', =>
+        @$menu.find(".#{@opts.itemClass}").removeClass @opts.hoverClass
         @$el.trigger 'hidemenu', @$menu
 
     toggleItems: (ids, bool) =>
@@ -957,9 +961,41 @@
         id = $(el).data 'id'
         $(el).toggle if bool then id in ids else id not in ids
 
+    keydownMenu: (e) =>
+      key = e.which
+      # key codes: ENTER: 13, ESC: 27, UP: 38, DOWN: 40, TAB: 9
+      if key in [ 13, 27, 38, 40, 9 ]
+        if key in [ 27, 9 ]
+          @hideMenu()
+        else if @$menu.is ':visible'
+          itemSelector = ".#{@opts.itemClass}"
+          $hover = @$menu.find "#{itemSelector}.#{@opts.hoverClass}"
+
+          if key in [ 38, 40 ]
+            $sibling = if $hover[0]
+              $hover[ if key == 38 then 'prevAll' else 'nextAll' ](itemSelector)
+              .first()
+            else
+              @$menu.find "#{itemSelector}:eq(0)"
+
+            if $sibling[0]
+              $hover.removeClass @opts.hoverClass
+              $sibling.addClass @opts.hoverClass
+          else if $hover[0]
+            $hover.click()
+        else
+          @showMenu()
+
+        key is 9
+
     clickItem: (e) =>
       $item = $(e.target).closest('li')
       @$el.trigger 'clickitem', $item.data('id') || $item.index @opts.itemClass
+
+    hoverItem: (e) =>
+      $(e.target).closest('li')
+        .addClass @opts.hoverClass
+        .siblings().removeClass @opts.hoverClass
 
     clickDoc: (e) =>
       @hideMenu() unless $(e.target).closest(@$el)[0]
