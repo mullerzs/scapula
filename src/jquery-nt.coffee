@@ -1356,6 +1356,7 @@
       'bgClass'        : 'nt-modal-bg'
       'bgFadeTime'     : 200
       'transitionTime' : 200
+      'transition'     : true
 
     init: ->
       @$el.addClass(@opts.modalClass).appendTo 'body'
@@ -1368,13 +1369,20 @@
       return if @$el.hasClass @opts.modalShowClass
 
       @$bg = $('<div>').addClass(@opts.bgClass).appendTo('body')
-        .fadeIn @opts.bgFadeTime, =>
+
+      shown = =>
+        $('body').addClass @opts.bodyShowClass if @opts.bodyShowClass
+        @$el.trigger 'showmodal'
+        @$bg.on 'click', @triggerBgClick
+
+      if !@opts.transition
+        @$el.addClass @opts.modalShowClass
+        @$bg.show()
+        shown()
+      else
+        @$bg.fadeIn @opts.bgFadeTime, =>
           @$el.addClass @opts.modalShowClass
-          @_showTimer = setTimeout =>
-            $('body').addClass @opts.bodyShowClass if @opts.bodyShowClass
-            @$el.trigger 'showmodal'
-            @$bg.on 'click', @triggerBgClick
-          , @opts.transitionTime
+          @_showTimer = setTimeout shown, @opts.transitionTime
 
     hide: (opts) =>
       clearTimeout @_showTimer
@@ -1389,7 +1397,7 @@
         $('body').removeClass @opts.bodyShowClass if @opts.bodyShowClass
         @$el.trigger 'hidemodal'
 
-      if opts?.destroy || !@$bg
+      if opts?.destroy || !@$bg || !@opts.transition
         _removeBg()
       else
         @$bg.fadeOut @opts.bgFadeTime, _removeBg
