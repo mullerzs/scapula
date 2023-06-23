@@ -765,8 +765,8 @@
       @toggleOptions()
       @$box.focus()
 
-    keydownBox: (e) =>
-      return if @$box.hasClass @opts.disabledClass
+    keydownBox: (e, opts) =>
+      return if !opts?.force && @$box.hasClass @opts.disabledClass
       key = e.which
       # key codes: ENTER: 13, ESC: 27, UP: 38, DOWN: 40
       if key in [ 13, 27, 38, 40 ]
@@ -775,7 +775,10 @@
         else if @$options.is ':visible'
           if key in [ 38, 40 ]
             $hover = @$options.find '.' + @opts.hoverClass
-            $sibling = $hover[ if key == 38 then 'prev' else 'next' ]()
+            $sibling = if $hover[0]
+              $hover[ if key == 38 then 'prev' else 'next' ]()
+            else
+              @$options.find('li:eq(0)')
 
             if $sibling[0]
               $hover.removeClass @opts.hoverClass
