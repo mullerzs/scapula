@@ -1004,7 +1004,7 @@
       @hideMenu() unless $(e.target).closest(@$el)[0]
 
     destroy: ->
-      @$el.off 'click', @showMenu
+      @$el.off 'click', @toggleMenu
       $(document).off 'click', @clickDoc
       @$menu.remove()
       delete @$menu
