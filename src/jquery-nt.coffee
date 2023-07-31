@@ -177,6 +177,7 @@
         else
           value
         _ret = "<option value=\"#{value}\""
+        _ret += " title=\"#{$.ntEncodeHtml _opt.title}\"" if _opt.title
         _ret += ' selected="selected"' if _opt.sel
         _ret + ">#{descr}</option>"
 
