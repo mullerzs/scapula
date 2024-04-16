@@ -801,15 +801,19 @@ define (require) ->
       ret.push h + units.h if h
       ret.push m + units.m if m
       ret.push s + units.s if s || !h && !m
-      ret = ret.join ' '
+      ret.join ' '
     else
-      m = '0' + m if m < 10
-      s = '0' + s if s < 10
+      _pad = (x) -> if x < 10 then '0' + x else "#{x}"
 
-      ret = m + ':' + s
-      ret = h + ':' + ret if h
+      ret = [ _pad(m), _pad(s) ]
 
-    ret
+      if opts.forcePadding
+        h ?= 0
+        h = _pad h
+
+      ret.unshift "#{h}" if h
+
+      ret.join ':'
 
   utils.formatFileSize = (size, opts) ->
     opts ?= {}
