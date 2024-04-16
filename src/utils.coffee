@@ -807,7 +807,7 @@ define (require) ->
 
       ret = [ _pad(m), _pad(s) ]
 
-      if opts.forcePadding
+      if opts?.forcePadding
         h ?= 0
         h = _pad h
 
