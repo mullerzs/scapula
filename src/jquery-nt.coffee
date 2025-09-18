@@ -928,9 +928,7 @@
     toggleMenu: =>
       if @$menu.is ':visible' then @hideMenu() else @showMenu()
 
-    showMenu: =>
-      return if @$menu.is ':visible'
-
+    adjustMenu: =>
       offset = @$el.offset()
       left = offset.left
 
@@ -949,9 +947,12 @@
       if top + menuHeight > windowHeight && offset.top > windowHeight - top
         top -= menuHeight + elHeight + 2 * parseInt @$menu.css 'margin-top'
 
-      @$el.trigger 'showmenu', @$menu
+      @$menu.css top: top, left: left
 
-      @$menu.css(top: top, left: left).fadeIn 'fast'
+    showMenu: =>
+      return if @$menu.is ':visible'
+      @$el.trigger 'showmenu', @$menu
+      @adjustMenu().fadeIn 'fast'
 
     hideMenu: =>
       return unless @$menu.is ':visible'
