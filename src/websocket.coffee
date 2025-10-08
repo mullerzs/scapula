@@ -54,6 +54,7 @@ define (require) ->
       if e.wasClean && e.code in [ 1000, 1001 ]
         delete ws._sockets[name]
       else
+        socket.attempts ?= 1
         to = ws.getReconnectTimeout socket.attempts
         # console.log "WS[#{name}] RECONNECT IN #{to} ms"
 
