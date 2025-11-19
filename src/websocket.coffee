@@ -69,15 +69,21 @@ define (require) ->
       # console.log "WS[#{name}] SET MESSAGING TO '#{opts.msgevent}'"
       socket.conn.onmessage = (e) ->
         # console.log "WS[#{name}] INCOMING MSG: " + e.data
-        content = {}
-        try
-          content = JSON.parse e.data
-          content = content[content_key] if opts.content_key
+        msgevent = opts.msgevent
 
-        if content[ws.PING]
-          socket.conn.send JSON.stringify _.pick content, ws.PING
+        if e.data instanceof Blob
+          msgevent += ':binary'
+          content = e.data
+        else
+          content = {}
+          try
+            content = JSON.parse e.data
+            content = content[content_key] if opts.content_key
 
-        vent.trigger opts.msgevent, content
+          if content[ws.PING]
+            socket.conn.send JSON.stringify _.pick content, ws.PING
+
+        vent.trigger msgevent, content
 
     socket.conn
 
