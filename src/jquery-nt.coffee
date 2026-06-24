@@ -874,13 +874,15 @@
 
   class plugins.Menu extends $._ntPluginBaseClass
     defaults:
-      appendTo       : 'body'
-      menuClass      : 'nt-dd-opts'
-      itemClass      : 'nt-dd-item'
-      hoverClass     : 'nt-itemhover'
-      separatorClass : 'nt-dd-separator'
-      labelClass     : 'nt-dd-label'
-      align          : 'left'
+      appendTo          : 'body'
+      menuClass         : 'nt-dd-opts'
+      itemClass         : 'nt-dd-item'
+      hoverClass        : 'nt-itemhover'
+      separatorClass    : 'nt-dd-separator'
+      labelClass        : 'nt-dd-label'
+      align             : 'left'
+      animation         : 'fade' # fade / slide / none
+      animationDuration : 'fast'
 
     init: ->
       @$menu = if @opts.items instanceof jQuery
@@ -952,13 +954,30 @@
     showMenu: =>
       return if @$menu.is ':visible'
       @$el.trigger 'showmenu', @$menu
-      @adjustMenu().fadeIn 'fast'
+      @adjustMenu()
+      _shown = => @$el.trigger 'showmenucomplete', @$menu
+      switch @opts.animation
+        when 'fade'
+          @$menu.fadeIn @opts.animationDuration, _shown
+        when 'slide'
+          @$menu.slideDown @opts.animationDuration, _shown
+        else
+          @$menu.show()
+          _shown()
 
     hideMenu: =>
       return unless @$menu.is ':visible'
-      @$menu.fadeOut 'fast', =>
+      _hidden = =>
         @$menu.find(".#{@opts.itemClass}").removeClass @opts.hoverClass
         @$el.trigger 'hidemenu', @$menu
+      switch @opts.animation
+        when 'fade'
+          @$menu.fadeOut @opts.animationDuration, _hidden
+        when 'slide'
+          @$menu.slideUp @opts.animationDuration, _hidden
+        else
+          @$menu.hide()
+          _hidden()
 
     toggleItems: (ids, bool) =>
       ids = [ ids ] unless $.isArray ids
