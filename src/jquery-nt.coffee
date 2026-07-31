@@ -117,7 +117,7 @@
   $.ntForceBlur = (target) ->
     $(target).blur() if target
     type = if $.ntIsMobile() then 'month' else 'text'
-    $('<input type="' + type + '"
+    $('<input type="' + type + '" class="nt-force-blur-dummy-input"
         style="font-size: 16px; position: fixed; top: 0; left: -10000px">')
       .appendTo('body').focus().remove()
 
